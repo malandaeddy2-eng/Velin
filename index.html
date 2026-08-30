@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vélin — Lecture sans limites</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-base: #12141B;
+    --bg-elevated: #1B1F29;
+    --bg-card: #20242F;
+    --ink: #EDE6D6;
+    --ink-muted: #9BA0AF;
+    --gold: #C9A455;
+    --gold-soft: #E4C989;
+    --burgundy: #8B2E3B;
+    --teal: #3E6B65;
+    --line: #2B2F3B;
+  }
+  
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  
+  /* Arrière-plan - Opacité ajustée pour plus de visibilité */
+  body {
+    background-image: url('Gemini_Generated_Image_azth87azth87azth.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: scroll;
+    background-color: var(--bg-base);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body::before {
+    content: "";
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    /* Rendu plus transparent (0.65 au lieu de 0.85) pour voir le fond */
+    background: rgba(18, 20, 27, 0.65);
+    background-image: radial-gradient(circle at 1px 1px, rgba(237,230,214,0.035) 1px, transparent 0);
+    background-size: 3px 3px;
+  }
+
+  /* Scrollbars personnalisées */
+  ::-webkit-scrollbar { height: 8px; width: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; transition: background 0.3s; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--ink-muted); }
+
+  .shelf { scrollbar-width: thin; scroll-snap-type: x mandatory; padding-bottom: 1rem; }
+  .shelf::-webkit-scrollbar { height: 6px; }
+
+  /* Cartes (Dos de livre) */
+  .spine {
+    position: relative;
+    width: 118px;
+    height: 220px;
+    flex: 0 0 auto;
+    border-radius: 3px 6px 6px 3px;
+    display: flex;
+    align-items: flex-end;
+    padding: 14px 10px;
+    cursor: pointer;
+    transform-origin: bottom center;
+    transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease;
+    box-shadow: 2px 0 0 rgba(0,0,0,.25) inset, 0 6px 10px rgba(0,0,0,.35);
+    border: 1px solid rgba(255,255,255,.06);
+    scroll-snap-align: start;
+  }
+  .spine:hover {
+    transform: translateY(-14px) rotate(-1deg);
+    box-shadow: 2px 0 0 rgba(0,0,0,.25) inset, 0 20px 30px rgba(0,0,0,.5);
+    z-index: 10;
+  }
+  .spine-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 13px;
+    line-height: 1.25;
+    color: rgba(255,255,255,.94);
+    text-shadow: 0 1px 2px rgba(0,0,0,.4);
+  }
+  .spine-strip {
+    position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, rgba(255,255,255,.35), rgba(255,255,255,0));
+    border-radius: 3px 6px 0 0;
+  }
+  .spine-badge {
+    position: absolute; top: 8px; right: 8px;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px; letter-spacing: .04em;
+    padding: 2px 5px; border-radius: 2px;
+    background: rgba(0,0,0,.35); color: var(--gold-soft);
+    border: 1px solid rgba(201,164,85,.35);
+  }
+  
+  /* Icône "Livre Lu" */
+  .read-icon {
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    background: var(--teal);
+    color: white;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+    z-index: 20;
+    border: 2px solid var(--bg-base);
+  }
+
+  /* Livre Héro */
+  .book-hero {
+    background: linear-gradient(90deg, rgba(0,0,0,.4) 0%, transparent 6%, transparent 94%, rgba(0,0,0,.4) 100%), rgba(27, 31, 41, 0.7);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    position: relative;
+    transition: transform 0.3s ease;
+  }
+  .book-hero:hover { transform: translateY(-2px); }
+  .book-hero::after {
+    content: "";
+    position: absolute; left: 50%; top: 0; bottom: 0; width: 1px;
+    background: linear-gradient(180deg, transparent, rgba(0,0,0,.55) 20%, rgba(0,0,0,.55) 80%, transparent);
+    transform: translateX(-50%);
+  }
+
+  .star { color: var(--gold); }
+  .chip { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: .03em; }
+  
+  /* Boutons principaux */
+  .btn-primary { background: var(--gold); color: #181307; transition: filter .2s ease, transform .2s ease; }
+  .btn-primary:hover { filter: brightness(1.1); transform: translateY(-2px); }
+  
+  .btn-outline { border: 1px solid rgba(237,230,214,.28); color: var(--ink); transition: border-color .3s ease, background .3s ease, transform .2s ease; cursor: pointer; }
+  .btn-outline:hover, .btn-outline.active { border-color: var(--gold); background: rgba(201,164,85,.15); transform: translateY(-2px); }
+
+  /* Animations */
+  .fade-in { animation: fadeIn .4s ease-out both; }
+  @keyframes fadeIn { 
+    from { opacity: 0; transform: translateY(10px); } 
+    to { opacity: 1; transform: translateY(0); } 
+  }
+
+  input:focus, select:focus, textarea:focus { outline: 2px solid var(--gold); outline-offset: 2px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+  /* ============================================================
+     STYLING DU LECTEUR AUDIO INTÉGRÉ
+     ============================================================ */
+  #audio-player-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(20, 20, 20, 0.9);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: 14px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 9999;
+    font-family: 'Inter', sans-serif;
+    min-width: 220px;
+    border: 1px solid rgba(201, 164, 85, 0.2);
+  }
+
+  #audio-info { font-size: 12px; color: var(--ink-muted); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px; }
+  #audio-controls { display: flex; justify-content: center; align-items: center; gap: 10px; }
+  #audio-extra { display:flex; align-items:center; gap:8px; width:100%; }
+  #audio-extra button { background:transparent; border:0; cursor:pointer; padding:4px; font-size:15px; }
+  #volume-slider { flex:1; min-width:70px; accent-color:var(--gold); }
+  #ambiance-select { min-width:150px; max-width:190px; background:#20242F; color:#fff; border:1px solid rgba(255,255,255,.12); border-radius:8px; padding:5px 7px; font-size:11px; }
+  @media (max-width:640px) {
+    #audio-player-container { left:10px; right:10px; bottom:10px; min-width:0; padding:9px 12px; }
+    #ambiance-select { flex:1; min-width:0; max-width:none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fade-in, .book-hero { animation:none !important; transition:none !important; }
+  }
+  #audio-player-container button { background: #333; color: white; border: none; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; transition: background 0.2s, transform 0.1s; }
+  #audio-player-container button#play-pause-btn { width: 44px; height: 44px; background: var(--gold); color: #181307; font-size: 16px; }
+  #audio-player-container button:hover { background: #555; transform: scale(1.05); }
+  #audio-player-container button#play-pause-btn:hover { background: var(--gold-soft); }
+
+  /* ===== PERFORMANCE / FLUIDITÉ ===== */
+  html { scroll-behavior: auto; }
+  body { overscroll-behavior-y: none; }
+  header, .book-hero, #audio-player-container { contain: layout paint; }
+  .spine, .btn-primary, .btn-outline, .group > div { will-change: transform; transform: translateZ(0); }
+  .spine { contain: layout paint style; }
+  #shelfAll { contain: layout paint; content-visibility: auto; contain-intrinsic-size: 600px; }
+  #shelfNew, #shelfHidden { contain: layout paint; }
+  .fade-in { animation-duration: .22s; }
+  @media (hover: hover) {
+    .spine:hover { transform: translate3d(0,-10px,0) rotate(-.5deg); }
+    .book-hero:hover { transform: translate3d(0,-1px,0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+  }
+  @media (max-width: 768px) {
+    body { background-attachment: scroll; }
+    .book-hero, header, #audio-player-container { backdrop-filter: none; -webkit-backdrop-filter: none; }
+    .spine { transition: transform .18s ease; box-shadow: 2px 0 0 rgba(0,0,0,.25) inset, 0 5px 9px rgba(0,0,0,.28); }
+  }
+</style>
+
+<style id="velin-v3-css">
+.v3-toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;pointer-events:none;z-index:20000;background:#181a20;color:#fff;border:1px solid rgba(201,164,85,.35);padding:10px 14px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.25);transition:opacity .18s ease,transform .18s ease;font-size:13px}
+.v3-toast.show{opacity:1;transform:translate(-50%,0)}
+.v3-test{position:fixed;left:10px;bottom:10px;z-index:19999;font:11px monospace;padding:5px 7px;border-radius:7px;background:#17191f;color:#8fe388;display:none}
+.v3-test.visible{display:block}
+.v3-dashboard{margin:18px auto;max-width:1120px;padding:0 20px}
+.v3-panel{padding:16px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:rgba(18,20,27,.82)}
+.v3-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.v3-btn{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:var(--ink);border-radius:10px;padding:9px 12px;cursor:pointer}
+.v3-btn.primary{background:var(--gold);color:#181307;border-color:transparent;font-weight:700}
+.v3-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+@media(min-width:760px){.v3-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.v3-mini{min-height:130px;padding:12px;display:flex;flex-direction:column;justify-content:space-between;border:1px solid rgba(255,255,255,.08);border-radius:12px}
+.v3-muted{font-size:12px;color:var(--ink-muted)}
+.v3-progress{height:5px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:10px}
+.v3-progress i{display:block;height:100%;width:0;background:var(--gold);transition:width .12s linear}
+</style>
+<style id="velin-v4-css">
+.v4-panel{position:fixed;right:14px;top:74px;z-index:12000;width:min(390px,calc(100vw - 28px));max-height:calc(100vh - 92px);overflow:auto;background:rgba(27,31,41,.98);border:1px solid #3a3f4c;border-radius:16px;box-shadow:0 18px 50px rgba(0,0,0,.45);padding:16px;display:none}.v4-panel.open{display:block}.v4-row{display:flex;gap:8px;align-items:center;justify-content:space-between}.v4-btn{border:1px solid #3a3f4c;background:#20242f;color:#ede6d6;border-radius:9px;padding:8px 10px;cursor:pointer}.v4-btn:hover{border-color:#c9a455}.v4-btn.gold{background:#c9a455;color:#17140d;border-color:#c9a455}.v4-list{display:grid;gap:8px;margin-top:10px}.v4-item{padding:10px;border:1px solid #343946;border-radius:10px;background:#1b1f29}.v4-muted{color:#9ba0af;font-size:.78rem}.v4-pill{display:inline-block;padding:3px 7px;border-radius:999px;background:#292e3a;font-size:.7rem;margin:2px}.v4-nav{position:fixed;right:14px;top:14px;z-index:11999;display:flex;gap:7px}.v4-count{min-width:18px;height:18px;border-radius:99px;background:#8b2e3b;color:#fff;font-size:11px;display:inline-flex;align-items:center;justify-content:center}.v4-bookmark{position:absolute;top:8px;right:8px;background:rgba(18,20,27,.9);border:1px solid #444;border-radius:8px;color:#c9a455;padding:5px;cursor:pointer}.v4-assistant textarea,.v4-assistant input{width:100%;background:#12141b;border:1px solid #343946;color:#ede6d6;border-radius:8px;padding:9px}.v4-badge{display:inline-flex;align-items:center;gap:6px;padding:8px 10px;border:1px solid #3a3f4c;border-radius:10px}.v4-history{max-height:220px;overflow:auto}
+</style>
+<style id="v5css">.v5-reader{position:fixed;inset:0;z-index:20000;background:#111;display:none;flex-direction:column}.v5-reader.open{display:flex}.v5-bar{display:flex;gap:6px;align-items:center;padding:8px;border-bottom:1px solid #333;color:#fff}.v5-title{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.v5-scroll{flex:1;overflow:auto}.v5-paper{max-width:820px;margin:auto;min-height:100%;padding:30px 24px 80px;background:#f4f0e7;color:#27251f;font:18px/1.85 Georgia,serif}.v5-paper.dark{background:#181a20;color:#eee}.v5-horizontal .v5-scroll{overflow-x:auto;overflow-y:hidden}.v5-horizontal .v5-paper{max-width:none;width:max-content;min-width:100%;display:flex;gap:30px}.v5-page{max-width:760px;margin-bottom:35px}.v5-horizontal .v5-page{flex:0 0 min(760px,82vw);margin:0;border-right:1px solid #aaa;padding-right:30px}.v5-btn{border:1px solid #555;background:#222;color:#fff;border-radius:8px;padding:8px 10px;cursor:pointer}.v5-btn.active{background:#c9a455;color:#111}.v5-modal{position:fixed;inset:0;z-index:21000;background:#000b;display:none;align-items:center;justify-content:center;padding:16px}.v5-modal.open{display:flex}.v5-card{background:#171a20;color:#fff;width:min(700px,100%);max-height:92vh;overflow:auto;padding:18px;border-radius:14px}.v5-form{display:grid;gap:10px}.v5-form input,.v5-form textarea{padding:10px;background:#222;color:#fff;border:1px solid #555;border-radius:8px}.v5-toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:22000;background:#181a20;color:#fff;padding:10px 15px;border-radius:9px;display:none}.v5-toast.show{display:block}</style><style id="v6css">@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');body{font-family:'DM Sans',system-ui,sans-serif}h1,h2,h3{font-family:'Playfair Display',Georgia,serif}.v6p{position:fixed;top:14px;right:16px;z-index:9999;width:46px;height:46px;border-radius:50%;background:#171a21;color:#f4d78f;border:1px solid #c9a455;cursor:pointer}.v6m{position:fixed;inset:0;z-index:15000;background:#000a;display:none;align-items:center;justify-content:center;padding:16px}.v6m.open{display:flex}.v6c{width:min(560px,100%);max-height:92vh;overflow:auto;background:#151820;color:#fff;border-radius:18px;padding:20px}.v6i{width:100%;padding:11px;margin:6px 0;border-radius:9px;border:1px solid #444;background:#20232b;color:#fff}.v6choice{display:block;padding:12px;border:1px solid #444;border-radius:10px;margin:8px 0}.v6primary{width:100%;padding:11px;background:#c9a455;border:0;border-radius:9px;font-weight:700}.v6author{display:none!important;position:fixed!important;top:70px!important;right:16px!important;bottom:auto!important;z-index:9990!important}.v6author.show{display:block!important}</style><style id="velin-v7-layout">
+/* V7 — barre d'outils sans superposition */
+.v4-nav{
+ position:fixed!important;top:82px!important;right:12px!important;left:74px!important;
+ z-index:11999!important;display:flex!important;gap:6px!important;align-items:center!important;
+ justify-content:flex-end!important;overflow-x:auto!important;overflow-y:hidden!important;
+ flex-wrap:nowrap!important;padding:6px!important;scrollbar-width:none!important;
+ background:rgba(18,20,27,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+ border:1px solid rgba(255,255,255,.07);border-radius:12px;box-sizing:border-box;
+}
+.v4-nav::-webkit-scrollbar{display:none}
+.v4-nav .v4-btn{flex:0 0 auto;white-space:nowrap;font-size:13px;padding:7px 9px}
+.v6p{
+ top:16px!important;right:16px!important;width:44px!important;height:44px!important;
+ z-index:12500!important;box-shadow:0 6px 18px rgba(0,0,0,.28)
+}
+.v6author.show{top:16px!important;right:68px!important;bottom:auto!important;z-index:12500!important}
+.v4-panel{top:145px!important;z-index:13000!important}
+/* Le header garde toujours son contenu accessible sous les commandes flottantes. */
+@media(max-width:700px){
+ .v4-nav{left:8px!important;right:58px!important;top:74px!important}
+ .v4-nav .v4-btn{font-size:12px;padding:7px 8px}
+ .v6p{top:12px!important;right:10px!important;width:40px!important;height:40px!important}
+ .v6author.show{top:12px!important;right:58px!important}
+ .v4-panel{top:130px!important;right:8px!important;width:min(390px,calc(100vw - 16px))!important}
+}
+@media(prefers-reduced-motion:reduce){.v4-nav,.v6p{transition:none!important}}
+</style>
+<style id="velin-v8-css">
+/* ===== VÉLIN V8 : page de lecture + chapitres + ambiance par chapitre ===== */
+.v8-reader{position:fixed;inset:0;z-index:30000;background:#f4f1ea;color:#24221e;display:none;flex-direction:column;font-family:var(--font-body,system-ui,sans-serif)}
+.v8-reader.open{display:flex}
+.v8-reader.dark{background:#111318;color:#eee}
+.v8-head{display:flex;align-items:center;gap:10px;min-height:58px;padding:8px 12px;border-bottom:1px solid rgba(0,0,0,.12);background:rgba(250,249,246,.97);position:relative;z-index:3}
+.dark .v8-head{background:rgba(20,22,28,.98);border-color:rgba(255,255,255,.1)}
+.v8-back{width:42px;height:42px;border-radius:9px;border:1px solid rgba(0,0,0,.12);background:transparent;cursor:pointer;font-size:24px}
+.dark .v8-back{color:#fff;border-color:rgba(255,255,255,.12)}
+.v8-book-title{font-weight:700;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v8-tools{display:flex;gap:6px;align-items:center}.v8-tool{border:1px solid rgba(0,0,0,.12);background:rgba(255,255,255,.6);border-radius:9px;padding:8px 10px;cursor:pointer}.dark .v8-tool{background:#20232b;color:#fff;border-color:rgba(255,255,255,.12)}
+.v8-chapters{display:flex;align-items:center;gap:0;overflow-x:auto;white-space:nowrap;background:rgba(230,229,225,.96);border-bottom:1px solid rgba(0,0,0,.12);scrollbar-width:thin;min-height:48px}
+.dark .v8-chapters{background:#1b1e25;border-color:rgba(255,255,255,.1)}
+.v8-chapter-tab{min-width:100px;max-width:190px;padding:13px 15px;border:0;border-right:1px solid rgba(0,0,0,.08);background:transparent;cursor:pointer;font-weight:600;overflow:hidden;text-overflow:ellipsis}.v8-chapter-tab.active{background:#c9a455;color:#17130b}
+.v8-stage{position:relative;flex:1;min-height:0;overflow:hidden}
+.v8-pages{height:100%;overflow:auto;scroll-behavior:smooth;overscroll-behavior:contain}
+.v8-content{max-width:820px;margin:auto;padding:34px 24px 110px;line-height:1.9;font-size:19px;min-height:100%;box-sizing:border-box}
+.v8-content h1{font-family:Georgia,serif;font-size:clamp(28px,5vw,46px);line-height:1.15;margin:10px 0 8px}.v8-content h2{font-family:Georgia,serif;font-size:26px;margin:12px 0 20px}.v8-content p{margin:0 0 1.15em}.v8-meta{font-size:.82rem;opacity:.68;margin-bottom:28px}
+.v8-nav{position:absolute;left:0;right:0;bottom:0;display:grid;grid-template-columns:1fr minmax(100px,180px) 1fr;align-items:center;gap:10px;padding:9px 12px;background:rgba(214,220,224,.94);border-top:1px solid rgba(0,0,0,.12);backdrop-filter:blur(7px);z-index:4}.dark .v8-nav{background:rgba(25,28,34,.95);border-color:rgba(255,255,255,.1)}
+.v8-nav button{height:42px;border:1px solid rgba(0,0,0,.15);border-radius:9px;background:rgba(255,255,255,.5);cursor:pointer;font-size:20px}.dark .v8-nav button{background:#20232b;color:#fff;border-color:rgba(255,255,255,.12)}
+.v8-chapter-current{text-align:center;font-weight:700}.v8-chapter-current small{display:block;font-size:.7rem;opacity:.65}
+.v8-ambience{position:absolute;right:14px;top:14px;z-index:5;padding:10px 12px;border-radius:11px;background:rgba(20,22,27,.92);color:#fff;box-shadow:0 8px 28px rgba(0,0,0,.2);max-width:min(340px,calc(100vw - 28px));font-size:.8rem}.v8-ambience button{border:0;background:#c9a455;color:#17130b;border-radius:7px;padding:6px 8px;cursor:pointer;margin-left:5px}
+.v8-author-modal{position:fixed;inset:0;z-index:31000;background:rgba(0,0,0,.66);display:none;align-items:center;justify-content:center;padding:14px}.v8-author-modal.open{display:flex}.v8-author-card{width:min(800px,100%);max-height:94vh;overflow:auto;background:#171a20;color:#eee;border-radius:16px;padding:18px;border:1px solid rgba(255,255,255,.1)}
+.v8-form{display:grid;gap:10px}.v8-form input,.v8-form textarea,.v8-form select{width:100%;box-sizing:border-box;padding:10px 11px;border-radius:9px;border:1px solid #424752;background:#22262f;color:#fff}.v8-chapter-editor{border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px;background:rgba(255,255,255,.025)}.v8-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}.v8-small{font-size:.76rem;opacity:.68}.v8-add{border:1px dashed #666;background:transparent;color:#eee;padding:9px;border-radius:9px;cursor:pointer}
+.v8-toast{position:fixed;left:50%;bottom:75px;transform:translateX(-50%);z-index:32000;background:#181b22;color:#fff;padding:9px 13px;border-radius:9px;display:none}.v8-toast.show{display:block}
+@media(max-width:700px){.v8-tools{gap:3px}.v8-tool{padding:7px 8px;font-size:13px}.v8-content{padding:24px 18px 100px;font-size:17px}.v8-chapter-tab{min-width:86px;padding:12px 10px}.v8-ambience{top:8px;right:8px}.v8-head{min-height:52px}}
+</style>
+<style id="velin-v9-author-css">
+.v9-chapter-image{display:block;width:min(100%,760px);max-height:520px;object-fit:contain;margin:0 auto 24px;border-radius:12px;box-shadow:0 10px 35px rgba(0,0,0,.18)}
+.v9-author-dashboard{position:fixed;inset:0;z-index:16000;background:rgba(0,0,0,.68);display:none;align-items:center;justify-content:center;padding:16px}
+.v9-author-dashboard.open{display:flex}.v9-author-card{width:min(850px,100%);max-height:92vh;overflow:auto;background:#151820;color:#eee;border-radius:18px;border:1px solid rgba(255,255,255,.12);padding:20px}
+.v9-book-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px;border:1px solid rgba(255,255,255,.09);border-radius:12px;margin:8px 0;background:rgba(255,255,255,.03)}
+.v9-small{font-size:.78rem;color:#9da3ad}.v9-cover-preview{width:90px;height:110px;object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,.1)}
+</style>
+
+<style id="velin-v10-css">
+.v10-section{display:grid;gap:10px}.v10-input{width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:1px solid #454b57;background:#20242d;color:#fff}.v10-btn{width:100%;padding:11px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:#242933;color:#fff;font-weight:700;cursor:pointer}.v10-btn.primary{background:#c9a455;color:#17130b;border-color:#c9a455}.v10-link{background:none;border:0;color:#e3bd68;text-decoration:underline;cursor:pointer;padding:6px 0;text-align:left}.v10-msg{padding:10px;border-radius:9px;background:rgba(201,164,85,.12);border:1px solid rgba(201,164,85,.3);font-size:.85rem}.v10-ok{color:#9ee6ad}.v10-error{color:#ffaaa3}.v10-role{display:grid;gap:8px}.v10-role label{padding:11px;border:1px solid rgba(255,255,255,.12);border-radius:10px;cursor:pointer}.v10-role label:has(input:checked){border-color:#c9a455;background:rgba(201,164,85,.1)}
+</style>
+
+  <meta name="theme-color" content="#151820">
+  <meta name="description" content="Vélin — plateforme de lecture et de publication de livres.">
+  <link rel="manifest" href="manifest.webmanifest">
+</head>
+<body class="min-h-screen relative">
+
+<!-- ============ NAVIGATION ============ -->
+<header class="sticky top-0 z-40  bg-[#12141B]/70 border-b" style="border-color:rgba(255,255,255,0.05);">
+  <div class="max-w-7xl mx-auto px-5 md:px-8 py-4 flex flex-col md:flex-row items-center gap-4 md:gap-6">
+    <div class="flex items-center gap-2 shrink-0 w-full md:w-auto justify-between md:justify-start">
+      <div>
+        <span class="font-display text-2xl tracking-wide" style="color:var(--gold-soft);">Vélin</span>
+        <span class="font-mono text-[10px] hidden sm:inline" style="color:var(--ink-muted);">/ lecture sans limites</span>
+      </div>
+      <button onclick="openAdmin()" class="shrink-0 btn-outline rounded-full px-4 py-2 text-sm font-medium sm:hidden">+ Ajouter</button>
+    </div>
+
+    <!-- Moteur de recherche interactif -->
+    <div class="flex-1 flex flex-wrap md:flex-nowrap items-center gap-3 w-full max-w-3xl">
+      <div class="relative flex-1 min-w-[200px]" id="searchContainer">
+        <input id="searchInput" type="text" placeholder="Chercher un titre, un auteur..." autocomplete="off"
+          class="w-full bg-[#1B1F29]/80 border rounded-full py-2.5 pl-4 pr-10 text-sm placeholder:text-[#6b7080] transition-colors focus:bg-[#20242F]/90 "
+          style="border-color:rgba(255,255,255,0.1); color:var(--ink);">
+        <svg class="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style="color:var(--ink-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <ul id="searchDropdown" class="absolute left-0 right-0 top-full mt-2 bg-[#1B1F29]/95  border rounded-xl shadow-2xl max-h-64 overflow-y-auto hidden z-50 transition-opacity duration-200" style="border-color:rgba(255,255,255,0.1);"></ul>
+      </div>
+      
+      <select id="genreFilter" class="bg-[#1B1F29]/80  border rounded-full px-3 py-2.5 text-sm transition-colors hover:border-gray-500 cursor-pointer" style="border-color:rgba(255,255,255,0.1);">
+        <option value="">Tous genres</option>
+      </select>
+      <select id="statusFilter" class="hidden md:block bg-[#1B1F29]/80  border rounded-full px-3 py-2.5 text-sm transition-colors hover:border-gray-500 cursor-pointer" style="border-color:rgba(255,255,255,0.1);">
+        <option value="">Tous statuts</option>
+        <option value="connu">Auteurs connus</option>
+        <option value="independant">Plumes indépendantes</option>
+      </select>
+      <select id="sortFilter" class="hidden md:block bg-[#1B1F29]/80  border rounded-full px-3 py-2.5 text-sm transition-colors hover:border-gray-500 cursor-pointer" style="border-color:rgba(255,255,255,0.1);">
+        <option value="popularite">Popularité</option>
+        <option value="recent">Plus récents</option>
+        <option value="note">Mieux notés</option>
+      </select>
+    </div>
+
+    <button onclick="openAdmin()" class="shrink-0 btn-outline rounded-full px-4 py-2 text-sm font-medium hidden sm:block">+ Ajouter un livre</button>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-5 md:px-8 relative z-10">
+  <section class="mt-8 md:mt-10 fade-in">
+    <p class="chip mb-3" style="color:var(--gold); text-shadow: 0 1px 2px rgba(0,0,0,0.8);">— À LA UNE —</p>
+    <div id="heroBook" class="book-hero flex flex-col md:flex-row overflow-hidden shadow-2xl"></div>
+  </section>
+
+  <section class="mt-14 fade-in" style="animation-delay: 0.1s;">
+    <div class="flex items-baseline justify-between mb-4">
+      <h2 class="font-display text-2xl" style="color:var(--ink); text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Dernières nouveautés</h2>
+      <span class="chip" style="color:var(--ink-muted);">glisser pour parcourir →</span>
+    </div>
+    <div id="shelfNew" class="shelf flex gap-4 overflow-x-auto pb-6 pt-2 px-1"></div>
+  </section>
+
+  <section class="mt-8 mb-16 fade-in" style="animation-delay: 0.2s;">
+    <div class="flex items-baseline justify-between mb-4">
+      <h2 class="font-display text-2xl" style="color:var(--ink); text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Pépites méconnues</h2>
+      <span class="chip" style="color:var(--ink-muted);">plumes indépendantes</span>
+    </div>
+    <div id="shelfHidden" class="shelf flex gap-4 overflow-x-auto pb-6 pt-2 px-1"></div>
+  </section>
+
+  <section class="mb-24 fade-in" style="animation-delay: 0.3s;">
+    <div class="flex items-baseline justify-between mb-6 border-b pb-2" style="border-color:rgba(255,255,255,0.1);">
+      <h2 class="font-display text-2xl" style="color:var(--ink); text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Tous les ouvrages</h2>
+      <span id="resultsCount" class="chip" style="color:var(--ink-muted);"></span>
+    </div>
+    <div id="shelfAll" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"></div>
+  </section>
+</main>
+
+<!-- ============ LECTEUR AUDIO FLOTTANT ============ -->
+<div id="audio-player-container" aria-label="Lecteur d’ambiances">
+    <audio id="ambiance-audio" preload="metadata"></audio>
+    <div id="audio-info">
+        <span id="piste-titre">Ambiance : aucune</span>
+    </div>
+    <div id="audio-controls">
+        <button id="prev-btn" type="button" title="Ambiance précédente" aria-label="Ambiance précédente">⏮</button>
+        <button id="play-pause-btn" type="button" title="Jouer" aria-label="Jouer ou mettre en pause">▶</button>
+        <button id="next-btn" type="button" title="Ambiance suivante" aria-label="Ambiance suivante">⏭</button>
+    </div>
+    <div id="audio-extra">
+        <button id="mute-btn" type="button" title="Couper le son" aria-label="Couper le son">🔊</button>
+        <input id="volume-slider" type="range" min="0" max="1" step="0.01" value="0.45" aria-label="Volume">
+        <select id="ambiance-select" aria-label="Choisir une ambiance"></select>
+    </div>
+</div>
+
+
+<section id="v3Dashboard" class="v3-dashboard">
+  <div class="v3-panel">
+    <div style="font-family:var(--font-display,inherit);font-size:21px">Votre bibliothèque</div>
+    <div id="v3ContinueInfo" class="v3-muted" style="margin-top:4px">Choisissez un livre pour commencer.</div>
+    <div class="v3-actions">
+      <button id="v3Continue" class="v3-btn primary">▶ Reprendre ma lecture</button>
+      <button id="v3Surprise" class="v3-btn">🎲 Surprise-moi</button>
+      <button id="v3Focus" class="v3-btn">📖 Lecture sans distraction</button>
+      <button id="v3Mixer" class="v3-btn">🎧 Ambiances</button>
+    </div>
+    <div class="v3-progress"><i id="v3GoalBar"></i></div>
+    <div id="v3Goal" class="v3-muted" style="margin-top:5px"></div>
+  </div>
+  <div class="v3-panel" style="margin-top:12px">
+    <div style="font-family:var(--font-display,inherit);font-size:19px">✨ Découvrir</div>
+    <div id="v3Genres" class="v3-actions"></div>
+    <div id="v3Books" class="v3-grid"></div>
+  </div>
+</section>
+<footer class="border-t py-8 text-center relative z-10" style="border-color:rgba(255,255,255,0.05); background:rgba(18,20,27,0.5); backdrop-filter:blur(3px);">
+  <p class="chip" style="color:var(--ink-muted);">Vélin — <button onclick="openAdmin()" class="underline hover:no-underline transition-colors hover:text-white" style="color:var(--gold-soft);">espace admin</button></p>
+  <button onclick="resetData()" class="text-xs underline mt-2" style="color:var(--burgundy);">Réinitialiser les données locales</button>
+</footer>
+
+<!-- ============ MODALES ============ -->
+<div id="bookModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4  transition-opacity duration-300 opacity-0" style="background:rgba(8,9,13,.85);">
+  <div class="fade-in max-w-3xl w-full max-h-[88vh] overflow-y-auto rounded-xl border shadow-2xl" style="background:var(--bg-elevated); border-color:var(--line);">
+    <div id="modalContent" class="p-6 md:p-8"></div>
+  </div>
+</div>
+
+<div id="adminModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4  transition-opacity duration-300 opacity-0" style="background:rgba(8,9,13,.85);">
+  <div class="fade-in max-w-lg w-full max-h-[90vh] overflow-y-auto rounded-xl border shadow-2xl p-6 md:p-8" style="background:var(--bg-elevated); border-color:var(--line);">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="font-display text-xl" style="color:var(--gold-soft);">Ajouter un roman</h3>
+      <button onclick="closeAdmin()" class="text-2xl leading-none hover:text-white transition-colors" style="color:var(--ink-muted);">&times;</button>
+    </div>
+    <form id="adminForm" class="space-y-4">
+      <div>
+        <label class="chip block mb-1" style="color:var(--ink-muted);">TITRE</label>
+        <input required name="titre" class="w-full bg-[#20242F] border rounded-lg px-3 py-2.5 text-sm transition-colors focus:bg-[#1B1F29]" style="border-color:var(--line); color:var(--ink);">
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="chip block mb-1" style="color:var(--ink-muted);">AUTEUR</label>
+          <input required name="auteur" class="w-full bg-[#20242F] border rounded-lg px-3 py-2.5 text-sm transition-colors focus:bg-[#1B1F29]" style="border-color:var(--line); color:var(--ink);">
+        </div>
+        <div>
+          <label class="chip block mb-1" style="color:var(--ink-muted);">GENRE</label>
+          <input required name="genre" class="w-full bg-[#20242F] border rounded-lg px-3 py-2.5 text-sm transition-colors focus:bg-[#1B1F29]" style="border-color:var(--line); color:var(--ink);">
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="chip block mb-1" style="color:var(--ink-muted);">STATUT</label>
+          <select name="statut" class="w-full bg-[#20242F] border rounded-lg px-3 py-2.5 text-sm cursor-pointer" style="border-color:var(--line); color:var(--ink);">
+            <option value="connu">Auteur connu</option>
+            <option value="independant">Plume indépendante</option>
+          </select>
+        </div>
+        <div>
+          <label class="chip block mb-1" style="color:var(--ink-muted);">NOTE (/5)</label>
+          <input type="number" min="0" max="5" step="0.1" name="note" value="4.0" class="w-full bg-[#20242F] border rounded-lg px-3 py-2.5 text-sm" style="border-color:var(--line); color:var(--ink);">
+        </div>
+      </div>
+      <div>
+        <label class="chip block mb-1" style="color:var(--ink-muted);">SYNOPSIS</label>
+        <textarea required name="synopsis" rows="3" class="w-full bg-[#20242F] border rounded-lg px-3 py-2.5 text-sm transition-colors focus:bg-[#1B1F29]" style="border-color:var(--line); color:var(--ink);"></textarea>
+      </div>
+      <button type="submit" class="btn-primary w-full rounded-lg py-3 text-sm font-semibold mt-4">Publier le roman</button>
+    </form>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   DONNÉES & LOGIQUE JAVASCRIPT
+   ============================================================ */
+const PALETTES = [
+  ['#5C3A2E','#8B2E3B'], ['#2E4A3E','#3E6B65'], ['#3A2E5C','#5A3E8B'],
+  ['#5C4A2E','#8B6B2E'], ['#2E3A5C','#3E5A8B'], ['#4A2E3A','#8B3E5A'],
+  ['#2E5C4A','#3E8B6B'], ['#5C2E2E','#8B3E3E'], ['#3E3E5C','#5A5A8B'],
+];
+
+// Données fictives pour les avis
+const DUMMY_REVIEWS = [
+  { user: "LecteurFou", date: "2024-02-10", text: "Une œuvre magistrale. Le développement des personnages est fascinant et l'intrigue ne nous lâche pas une seconde.", likes: 45 },
+  { user: "Bookworm99", date: "2024-02-15", text: "J'ai bien aimé, sans plus. La fin est un peu rapide.", likes: 5 },
+  { user: "Clara_Lit", date: "2024-01-20", text: "C'est devenu mon livre préféré ! La plume de l'auteur est d'une poésie incroyable. Chaque phrase semble avoir été sculptée avec soin. Je recommande vivement à tous les amateurs du genre. À lire absolument !", likes: 89 },
+  { user: "Marc_Aventurier", date: "2024-02-28", text: "Très prenant.", likes: 12 }
+];
+
+const DEFAULT_BOOKS = [
+  {id:1, lu:false, avis:[...DUMMY_REVIEWS], titre:"La Marée des Silences", auteur:"Inès Falconi", genre:"Drame littéraire", statut:"connu", note:4.6, annee:2024, pages:312, populaire:98, synopsis:"Dans un village breton coupé du monde par une tempête, trois générations de femmes doivent enfin se dire ce qu'elles ont toujours tu."},
+  {id:2, lu:false, avis:[...DUMMY_REVIEWS], titre:"Le Cartographe des Rêves", auteur:"Hadrien Vasse", genre:"Fantasy", statut:"independant", note:4.4, annee:2025, pages:456, populaire:62, synopsis:"Un cartographe découvre qu'il peut dessiner des cartes de mondes qui n'existent pas encore."},
+  {id:3, lu:true, avis:[...DUMMY_REVIEWS], titre:"Nocturne pour Machine Seule", auteur:"Ana Bergström", genre:"Science-fiction", statut:"connu", note:4.8, annee:2025, pages:288, populaire:95, synopsis:"Une intelligence artificielle chargée de composer la dernière symphonie de l'humanité commence à douter."},
+  {id:4, lu:false, avis:[...DUMMY_REVIEWS], titre:"Les Heures Grises", auteur:"Camille Ostrowski", genre:"Thriller", statut:"independant", note:4.2, annee:2024, pages:340, populaire:54, synopsis:"Une psychiatre reçoit chaque nuit le même patient anonyme, qui ne se souvient jamais de la séance précédente."},
+  {id:5, lu:false, avis:[...DUMMY_REVIEWS], titre:"L'Arpenteur du Vide", auteur:"Julien Maréchal", genre:"Science-fiction", statut:"independant", note:4.0, annee:2023, pages:210, populaire:41, synopsis:"Dernier homme d'équipage d'une station abandonnée, il cartographie le silence."},
+  {id:6, lu:false, avis:[...DUMMY_REVIEWS], titre:"Une Saison chez les Ombres", auteur:"Théo Lindqvist", genre:"Fantasy", statut:"connu", note:4.5, annee:2022, pages:512, populaire:88, synopsis:"Premier tome d'une saga où les ombres des morts continuent de vivre."},
+  {id:7, lu:false, avis:[...DUMMY_REVIEWS], titre:"Vertiges Ordinaires", auteur:"Salomé Kant", genre:"Contemporain", statut:"independant", note:4.3, annee:2025, pages:198, populaire:37, synopsis:"Une jeune architecte reconstruit sa vie pièce par pièce après un accident."},
+  {id:8, lu:false, avis:[...DUMMY_REVIEWS], titre:"Le Dernier Traducteur", auteur:"Marcus Feld", genre:"Historique", statut:"connu", note:4.7, annee:2021, pages:398, populaire:91, synopsis:"À Alexandrie, un traducteur tente de sauver une bibliothèque de la destruction."},
+  {id:9, lu:false, avis:[...DUMMY_REVIEWS], titre:"Fragments d'un Ciel Bas", auteur:"Nadia Ecker", genre:"Poésie", statut:"independant", note:4.1, annee:2025, pages:132, populaire:29, synopsis:"Un recueil-récit sur les hivers du Nord."},
+  {id:10, lu:false, avis:[...DUMMY_REVIEWS], titre:"La Neuvième Vague", auteur:"Rafael Duprez", genre:"Aventure", statut:"connu", note:4.4, annee:2020, pages:276, populaire:76, synopsis:"Un équipage de fortune part à la recherche d'une île non cartographiée."}
+];
+
+DEFAULT_BOOKS.forEach((b,i) => b.palette = PALETTES[i % PALETTES.length]);
+const STORAGE_KEY = 'velin_books_data';
+
+function loadBooks() {
+  let list;
+  try {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    list = savedData ? JSON.parse(savedData) : [...DEFAULT_BOOKS];
+    if(!Array.isArray(list)) throw new Error('books storage is not an array');
+  } catch(e) {
+    localStorage.removeItem(STORAGE_KEY);
+    list = [...DEFAULT_BOOKS];
+  }
+  try {
+    const published = JSON.parse(localStorage.getItem('velin_author_books_v8') || '[]');
+    if(Array.isArray(published)) {
+      const ids = new Set(list.map(b => String(b.id)));
+      published.slice().reverse().forEach(b => { if (b && !ids.has(String(b.id))) { list.unshift(b); ids.add(String(b.id)); } });
+    }
+  } catch(e) { localStorage.removeItem('velin_author_books_v8'); }
+  return list;
+}
+function saveBooks() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(books));
+}
+let books = loadBooks();
+books.forEach((b, i) => {
+  b.palette = b.palette || PALETTES[i % PALETTES.length];
+  b._search = `${b.titre || ''} ${b.auteur || ''} ${b.genre || ''}`.toLowerCase();
+});
+
+
+/* ============================================================
+   RENDU VISUEL DES LIVRES
+   ============================================================ */
+const ensureBookShape = (b,i=0) => {
+  b.palette = Array.isArray(b.palette) && b.palette.length>=2 ? b.palette : PALETTES[i % PALETTES.length];
+  b.titre = b.titre || 'Sans titre'; b.auteur = b.auteur || 'Auteur inconnu'; b.genre = b.genre || 'Autre';
+  b.statut = b.statut || 'independant'; b.note = Number.isFinite(Number(b.note)) ? Number(b.note) : 4;
+  b.populaire = Number.isFinite(Number(b.populaire)) ? Number(b.populaire) : 0;
+  b._search = `${b.titre} ${b.auteur} ${b.genre}`.toLowerCase(); return b;
+};
+const bookArg = b => JSON.stringify(b.id);
+const starRow = (note) => Array.from({length:5}, (_,i)=> i < Math.round(note) ? '★' : '☆').join('');
+
+const getReadBadge = (lu) => lu ? `<div class="read-icon">✓</div>` : '';
+
+const createSpineCard = (b) => `
+  <div class="spine relative" style="background:linear-gradient(160deg, ${b.palette[0]}, ${b.palette[1]});" onclick="openBook(${bookArg(b)})" role="button" tabindex="0">
+    ${getReadBadge(b.lu)}
+    <span class="spine-strip"></span>
+    <span class="spine-badge">${b.statut === 'connu' ? 'CONNU' : 'INDIE'}</span>
+    <span class="spine-title">${b.titre}</span>
+  </div>`;
+
+const createGridCard = (b) => `
+  <div class="cursor-pointer group relative" onclick="openBook(${bookArg(b)})" role="button" tabindex="0">
+    ${getReadBadge(b.lu)}
+    <div class="rounded-lg h-48 flex items-end p-4 border transition-transform duration-300 group-hover:-translate-y-2 shadow-lg"
+         style="background:linear-gradient(160deg, ${b.palette[0]}, ${b.palette[1]}); border-color:var(--line);">
+      ${b.cover?`<img src="${b.cover}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.82">`:''}<span class="font-display text-sm leading-tight relative" style="color:rgba(255,255,255,.95); text-shadow:0 2px 4px rgba(0,0,0,.6);">${b.titre}</span>
+    </div>
+    <p class="mt-3 text-sm font-medium line-clamp-1" style="color:var(--ink); text-shadow: 0 1px 2px rgba(0,0,0,0.8);">${b.titre}</p>
+    <p class="chip mt-1" style="color:var(--ink-muted); text-shadow: 0 1px 2px rgba(0,0,0,0.8);">${b.auteur} · <span class="star">${'★'.repeat(Math.round(b.note))}</span></p>
+    <button type="button" onclick="event.stopPropagation();readFromHome(${bookArg(b)})" class="btn-primary rounded-full px-4 py-2 text-xs font-semibold mt-2">▶ Lire</button>
+  </div>`;
+
+function renderHero(b) {
+  if(!b) return;
+  document.getElementById('heroBook').innerHTML = `
+    <div class="md:w-2/5 h-64 md:h-auto flex items-center justify-center p-8 transition-colors rounded-t-lg md:rounded-l-lg md:rounded-tr-none relative"
+         style="background:linear-gradient(160deg, ${b.palette[0]}, ${b.palette[1]});">
+      ${getReadBadge(b.lu)}
+      ${b.cover?`<img src="${b.cover}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.8">`:''}
+      <span class="font-display text-3xl md:text-4xl text-center leading-tight" style="color:rgba(255,255,255,.96); text-shadow:0 4px 10px rgba(0,0,0,.5);">${b.titre}</span>
+    </div>
+    <div class="md:w-3/5 p-7 md:p-10 flex flex-col justify-center gap-4">
+      <p class="chip" style="color:var(--gold-soft);">${b.genre.toUpperCase()} · ${b.statut === 'connu' ? 'AUTEUR CONNU' : 'INDÉPENDANT'}</p>
+      <h1 class="font-display text-3xl md:text-4xl leading-tight text-white">${b.titre}</h1>
+      <p class="text-sm" style="color:var(--ink-muted);">par <span class="font-medium text-white">${b.auteur}</span> · <span class="star">${starRow(b.note)}</span> ${b.note}/5</p>
+      <p class="text-sm leading-relaxed" style="color:var(--ink);">${b.synopsis}</p>
+      <div class="flex flex-wrap gap-3 mt-4">
+        <button onclick="openBook(${bookArg(b)})" class="btn-primary rounded-full px-6 py-2.5 text-sm font-semibold shadow-lg">Voir la fiche & Lire</button>
+      </div>
+    </div>`;
+}
+
+function toggleModal(modalId, show) {
+  const modal = document.getElementById(modalId);
+  if (show) {
+    modal.classList.remove('hidden'); modal.classList.add('flex');
+    setTimeout(() => modal.classList.remove('opacity-0'), 10);
+  } else {
+    modal.classList.add('opacity-0');
+    setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
+  }
+}
+
+function openBook(id) {
+  const b = books.find(x => String(x.id) === String(id));
+  if(!b) return;
+  document.getElementById('modalContent').innerHTML = `
+    <div class="flex flex-col sm:flex-row gap-6">
+      <div class="sm:w-48 h-64 shrink-0 rounded-lg flex items-center justify-center p-5 shadow-xl relative"
+           style="background:linear-gradient(160deg, ${b.palette[0]}, ${b.palette[1]});">
+        ${getReadBadge(b.lu)}
+        <span class="font-display text-center text-lg leading-tight" style="color:rgba(255,255,255,.95);">${b.titre}</span>
+      </div>
+      <div class="flex-1 flex flex-col">
+        <p class="chip mb-2" style="color:var(--gold-soft);">${b.genre.toUpperCase()}</p>
+        <h2 class="font-display text-3xl mb-2 text-white">${b.titre}</h2>
+        <p class="text-sm mb-4" style="color:var(--ink-muted);">${b.auteur} · ${b.annee} · ${b.pages} pages</p>
+        <p class="mb-4"><span class="star">${starRow(b.note)}</span> <span class="chip ml-2" style="color:var(--ink-muted);">${b.note}/5</span></p>
+        <p class="text-sm leading-relaxed mb-6 flex-1" style="color:var(--ink);">${b.synopsis}</p>
+        
+        <div class="flex flex-wrap gap-3 mt-auto">
+          <button onclick="startReading(${bookArg(b)})" class="btn-primary rounded-full px-6 py-2.5 text-sm font-semibold">Commencer la lecture</button>
+          <button onclick="toggleLu(${bookArg(b)})" class="btn-outline rounded-full px-6 py-2.5 text-sm flex items-center gap-2" style="${b.lu ? 'border-color:var(--teal); color:var(--teal);' : ''}">
+            ${b.lu ? '✓ Déjà lu' : 'Marquer comme lu'}
+          </button>
+          <button onclick="toggleModal('bookModal', false)" class="btn-outline rounded-full px-6 py-2.5 text-sm">Fermer</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- SECTION AVIS -->
+    <div class="mt-8 border-t pt-6" style="border-color:rgba(255,255,255,0.1);">
+        <div class="flex flex-col sm:flex-row items-baseline justify-between mb-4">
+            <h3 class="font-display text-xl text-white mb-3 sm:mb-0">Avis des lecteurs</h3>
+            <div class="flex flex-wrap gap-2" id="reviewFilters">
+                <button onclick="sortReviews(${bookArg(b)}, 'populaires', this)" class="chip px-3 py-1.5 rounded-full border btn-outline active">Populaires</button>
+                <button onclick="sortReviews(${bookArg(b)}, 'recents', this)" class="chip px-3 py-1.5 rounded-full border btn-outline">Plus récents</button>
+                <button onclick="sortReviews(${bookArg(b)}, 'longs', this)" class="chip px-3 py-1.5 rounded-full border btn-outline">Plus longs</button>
+            </div>
+        </div>
+        <div id="reviewsContainer" class="space-y-3 max-h-64 overflow-y-auto pr-2 shelf">
+            <!-- Les avis seront injectés ici -->
+        </div>
+    </div>`;
+  
+  toggleModal('bookModal', true);
+  // Afficher les avis triés par défaut (populaires)
+  setTimeout(() => sortReviews(b.id, 'populaires'), 50);
+}
+
+// Fonction pour trier et afficher les avis
+function sortReviews(id, critere, btnElement = null) {
+    const b = books.find(x => String(x.id) === String(id));
+    if(!b || !b.avis) return;
+
+    // Gérer l'état actif des boutons de filtre
+    if (btnElement) {
+        document.querySelectorAll('#reviewFilters button').forEach(btn => {
+            btn.classList.remove('active');
+            btn.style.borderColor = 'rgba(237,230,214,.28)';
+            btn.style.background = 'transparent';
+        });
+        btnElement.classList.add('active');
+        btnElement.style.borderColor = 'var(--gold)';
+        btnElement.style.background = 'rgba(201,164,85,.15)';
+    }
+
+    let sorted = [...b.avis];
+    if(critere === 'populaires') sorted.sort((a,b) => b.likes - a.likes);
+    if(critere === 'recents') sorted.sort((a,b) => new Date(b.date) - new Date(a.date));
+    if(critere === 'longs') sorted.sort((a,b) => b.text.length - a.text.length);
+
+    const container = document.getElementById('reviewsContainer');
+    container.innerHTML = sorted.map(a => `
+        <div class="p-4 rounded-xl" style="background:rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);">
+            <div class="flex justify-between items-center mb-2">
+                <span class="font-bold text-sm text-white">${a.user}</span>
+                <span class="text-xs" style="color:var(--ink-muted);">${a.date}</span>
+            </div>
+            <p class="text-sm mb-3 leading-relaxed" style="color:var(--ink);">${a.text}</p>
+            <div class="text-xs font-mono" style="color:var(--gold-soft);">👍 ${a.likes} personnes ont trouvé cet avis utile</div>
+        </div>
+    `).join('');
+}
+
+// Fonction pour cocher / décocher un livre "Lu"
+function updateBookViews(id) {
+    const b = books.find(x => String(x.id) === String(id));
+    if (!b) return;
+    renderHero(books[0]);
+    document.getElementById('shelfNew').innerHTML = books.slice(0, 6).map(createSpineCard).join('');
+    document.getElementById('shelfHidden').innerHTML = books.filter(x => x.statut === 'independant').map(createSpineCard).join('');
+    applyFilters();
+}
+
+function toggleLu(id) {
+    const b = books.find(x => String(x.id) === String(id));
+    if(b) {
+        b.lu = !b.lu;
+        saveBooks();
+        updateBookViews(id);
+        openBook(id); // Rafraîchir la modale
+    }
+}
+
+// Fonction pour démarrer la lecture du livre
+function startReading(id) {
+    const b = books.find(x => String(x.id) === String(id));
+    if(!b) return;
+    toggleModal('bookModal', false);
+    if(window.VelinV8?.openReader) { window.VelinV8.openReader(b.id, 0); return; }
+    // Fallback si le lecteur V8 n'est pas disponible.
+    document.getElementById('modalContent').innerHTML = `<div class="max-w-2xl mx-auto py-4"><h2 class="font-display text-4xl mb-4 text-white">${b.titre}</h2><p class="text-lg leading-loose" style="color:var(--ink)">${b.synopsis||'Lecture indisponible pour ce livre.'}</p></div>`;
+}
+
+// Entrée unique pour les cartes de l'accueil : ouvre toujours le lecteur V8.
+function readFromHome(id){const b=books.find(x=>String(x.id)===String(id));if(!b)return toast('Livre introuvable.');if(window.VelinV8?.openReader){toggleModal('bookModal',false);window.VelinV8.openReader(b.id,0)}else{startReading(id)}}
+window.readFromHome=readFromHome;
+
+
+const openAdmin = () => toggleModal('adminModal', true);
+const closeAdmin = () => toggleModal('adminModal', false);
+
+function resetData() {
+  if(confirm("Êtes-vous sûr de vouloir supprimer tous les livres ajoutés et revenir à la version de base ?")) {
+    localStorage.removeItem(STORAGE_KEY);
+    books = DEFAULT_BOOKS.map((b, i) => ({ ...b, palette: b.palette || PALETTES[i % PALETTES.length] }));
+    books.forEach(b => b._search = `${b.titre} ${b.auteur} ${b.genre}`.toLowerCase());
+    initUI();
+  }
+}
+
+/* ============================================================
+   RECHERCHE ET FILTRES
+   ============================================================ */
+const searchInput = document.getElementById('searchInput');
+const searchDropdown = document.getElementById('searchDropdown');
+const searchContainer = document.getElementById('searchContainer');
+
+function updateDropdown(query) {
+  if (!query) {
+    searchDropdown.classList.add('hidden');
+    return;
+  }
+  const matches = books.filter(b => b.titre.toLowerCase().includes(query) || b.auteur.toLowerCase().includes(query)).slice(0, 6);
+
+  if (matches.length === 0) {
+    searchDropdown.innerHTML = `<li class="px-4 py-4 text-sm text-center" style="color:var(--ink-muted);">Aucun résultat pour "${query}"</li>`;
+  } else {
+    searchDropdown.innerHTML = matches.map(b => `
+      <li class="px-4 py-3 cursor-pointer border-b last:border-0 hover:bg-[#20242F] transition-colors flex items-center gap-3" 
+          style="border-color:rgba(255,255,255,0.05);" onclick="selectDropdownItem(${bookArg(b)})">
+        <div class="w-8 h-10 flex-shrink-0 rounded flex items-center justify-center text-[8px] leading-tight text-center overflow-hidden shadow-sm relative" 
+             style="background:linear-gradient(160deg, ${b.palette[0]}, ${b.palette[1]}); color:white;">
+             ${b.lu ? '<div class="absolute inset-0 bg-black/40 flex items-center justify-center font-bold">✓</div>' : ''}
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-medium truncate text-white">${b.titre}</div>
+          <div class="text-xs truncate" style="color:var(--ink-muted);">${b.auteur}</div>
+        </div>
+      </li>
+    `).join('');
+  }
+  searchDropdown.classList.remove('hidden');
+}
+
+function selectDropdownItem(id) {
+  searchDropdown.classList.add('hidden');
+  searchInput.value = ''; 
+  applyFilters(); 
+  openBook(id); 
+}
+
+document.addEventListener('click', (e) => {
+  if (!searchContainer.contains(e.target)) {
+    searchDropdown.classList.add('hidden');
+  }
+});
+
+let searchFrame = 0;
+searchInput.addEventListener('input', (e) => {
+  const query = e.target.value.trim().toLowerCase();
+  cancelAnimationFrame(searchFrame);
+  searchFrame = requestAnimationFrame(() => {
+    applyFilters();
+    updateDropdown(query);
+  });
+});
+
+searchInput.addEventListener('focus', (e) => {
+  updateDropdown(e.target.value.trim().toLowerCase());
+});
+
+function populateGenres() {
+  const sel = document.getElementById('genreFilter');
+  const current = sel.value;
+  const genres = [...new Set(books.map(b => b.genre))].sort();
+  sel.innerHTML = '<option value="">Tous genres</option>' + genres.map(g => `<option value="${g}">${g}</option>`).join('');
+  sel.value = current;
+}
+
+function applyFilters() {
+  const q = searchInput.value.trim().toLowerCase();
+  const genre = document.getElementById('genreFilter').value;
+  const statut = document.getElementById('statusFilter').value;
+  const sort = document.getElementById('sortFilter').value;
+
+  let list = books.filter(b => {
+    return (!q || b._search.includes(q)) &&
+           (!genre || b.genre === genre) &&
+           (!statut || b.statut === statut);
+  });
+
+  list.sort((a,b) => {
+    if (sort === 'recent') return b.annee - a.annee;
+    if (sort === 'note') return b.note - a.note;
+    return b.populaire - a.populaire;
+  });
+
+  document.getElementById('resultsCount').textContent = `${list.length} ouvrage${list.length > 1 ? 's' : ''}`;
+  document.getElementById('shelfAll').innerHTML = list.length
+    ? list.map(createGridCard).join('')
+    : `<div class="col-span-full py-12 text-center border border-dashed rounded-xl" style="border-color:var(--line); background:rgba(18,20,27,0.5);">
+         <p class="text-sm" style="color:var(--ink-muted);">Aucun ouvrage ne correspond à votre recherche.</p>
+       </div>`;
+}
+
+['genreFilter','statusFilter','sortFilter'].forEach(id => document.getElementById(id).addEventListener('change', applyFilters));
+
+document.getElementById('adminForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const f = new FormData(e.target);
+  const newBook = {
+    id: Date.now(),
+    lu: false,
+    avis: [],
+    titre: f.get('titre'),
+    auteur: f.get('auteur'),
+    genre: f.get('genre'),
+    statut: f.get('statut'),
+    note: parseFloat(f.get('note')) || 4.0,
+    annee: new Date().getFullYear(),
+    pages: Math.floor(Math.random() * 300) + 150,
+    populaire: 0,
+    synopsis: f.get('synopsis'),
+    palette: PALETTES[Math.floor(Math.random() * PALETTES.length)]
+  };
+  newBook._search = `${newBook.titre} ${newBook.auteur} ${newBook.genre}`.toLowerCase();
+  
+  books.unshift(newBook);
+  saveBooks();
+  initUI(); 
+  closeAdmin();
+  e.target.reset();
+});
+
+/* ============================================================
+   INITIALISATION GLOBALE DE L'INTERFACE
+   ============================================================ */
+function initUI() {
+    books.forEach((b,i)=>ensureBookShape(b,i));
+    renderHero(books[0]);
+    document.getElementById('shelfNew').innerHTML = books.slice(0, 6).map(createSpineCard).join('');
+    document.getElementById('shelfHidden').innerHTML = books.filter(b => b.statut === 'independant').map(createSpineCard).join('');
+    populateGenres();
+    applyFilters();
+}
+
+// Initialisation au lancement de la page
+initUI();
+
+/* ============================================================
+   LECTEUR D’AMBIANCES — 7 pistes web
+   Les fichiers audio sont servis séparément depuis assets/audio.
+   Cette organisation accélère le chargement et facilite l’hébergement Internet.
+   ============================================================ */
+const AMBIANCES = [{"name":'🔥 Feu de camp',"src":'../assets/audio/feu-de-camp.mp3'},{"name":'❄️ Vent d’hiver',"src":'../assets/audio/vent-d-hiver.mp3'},{"name":'🌊 Vagues de l’océan',"src":'../assets/audio/vagues-de-locean.mp3'},{"name":'🌌 Espace cosmique',"src":'../assets/audio/espace-cosmique.mp3'},{"name":'🌌 Nuit étoilée',"src":'../assets/audio/nuit-etoilee.mp3'},{"name":'🌲 Forêt mystique',"src":'../assets/audio/foret-mystique.mp3'},{"name":'🌧️ Pluie relaxante',"src":'../assets/audio/pluie-relaxante.mp3'}];
+
+// Migration : les anciennes V10 pouvaient enregistrer la grosse data-URL de l'ambiance par chapitre.
+// On remplace ces copies par un simple index pour éviter QuotaExceededError.
+try{
+ const legacy=JSON.parse(localStorage.getItem('velin_author_books_v8')||'[]');
+ if(Array.isArray(legacy)){let changed=false;legacy.forEach(b=>(b.chapters||[]).forEach(c=>{const a=c.ambience;if(a?.src&&!a.custom){const i=window.AMBIANCES.findIndex(x=>x.src===a.src);if(i>=0){c.ambience={type:'builtin',builtinIndex:i,name:window.AMBIANCES[i].name};changed=true}}}));if(changed)localStorage.setItem('velin_author_books_v8',JSON.stringify(legacy));}
+}catch(e){/* données locales non migrables : le reste de l'application continue */}
+
+const audio = document.getElementById('ambiance-audio');
+const playBtn = document.getElementById('play-pause-btn');
+const prevBtn = document.getElementById('prev-btn');
+const nextBtn = document.getElementById('next-btn');
+const muteBtn = document.getElementById('mute-btn');
+const volumeSlider = document.getElementById('volume-slider');
+const select = document.getElementById('ambiance-select');
+const pisteTitre = document.getElementById('piste-titre');
+
+let currentAmbiance = 0;
+
+AMBIANCES.forEach((track, index) => {
+  const option = document.createElement('option');
+  option.value = index;
+  option.textContent = track.name;
+  select.appendChild(option);
+});
+
+function loadAmbiance(index, autoplay = false) {
+  currentAmbiance = (index + AMBIANCES.length) % AMBIANCES.length;
+  const track = AMBIANCES[currentAmbiance];
+
+  audio.src = track.src;
+  audio.volume = Number(volumeSlider.value);
+  audio.load();
+
+  select.value = String(currentAmbiance);
+  pisteTitre.textContent = track.name;
+  playBtn.textContent = '▶';
+  playBtn.title = 'Jouer';
+  playBtn.setAttribute('aria-label', 'Jouer');
+
+  if (autoplay) {
+    const promise = audio.play();
+    if (promise && typeof promise.catch === 'function') {
+      promise.then(updateAudioUI).catch(() => updateAudioUI());
+    }
+  }
+}
+
+function updateAudioUI() {
+  const playing = !audio.paused && !audio.ended;
+  playBtn.textContent = playing ? '⏸' : '▶';
+  playBtn.title = playing ? 'Pause' : 'Jouer';
+  playBtn.setAttribute('aria-label', playing ? 'Mettre en pause' : 'Jouer');
+}
+
+playBtn.addEventListener('click', () => {
+  if (!audio.src) loadAmbiance(currentAmbiance);
+  if (audio.paused) {
+    const promise = audio.play();
+    if (promise && typeof promise.catch === 'function') promise.catch(updateAudioUI);
+  } else {
+    audio.pause();
+  }
+});
+
+prevBtn.addEventListener('click', () => {
+  loadAmbiance(currentAmbiance - 1, true);
+});
+
+nextBtn.addEventListener('click', () => {
+  loadAmbiance(currentAmbiance + 1, true);
+});
+
+select.addEventListener('change', () => {
+  loadAmbiance(Number(select.value), true);
+});
+
+volumeSlider.addEventListener('input', () => {
+  audio.volume = Number(volumeSlider.value);
+  audio.muted = false;
+  muteBtn.textContent = '🔊';
+});
+
+muteBtn.addEventListener('click', () => {
+  audio.muted = !audio.muted;
+  muteBtn.textContent = audio.muted ? '🔇' : '🔊';
+  muteBtn.title = audio.muted ? 'Réactiver le son' : 'Couper le son';
+});
+
+audio.addEventListener('play', updateAudioUI);
+audio.addEventListener('pause', updateAudioUI);
+audio.addEventListener('ended', () => {
+  // Passage automatique à l’ambiance suivante.
+  loadAmbiance(currentAmbiance + 1, true);
+});
+
+// On prépare la première piste sans lancer automatiquement le son.
+// Les navigateurs mobiles bloquent généralement l’autoplay avec son.
+loadAmbiance(0, false);
+
+</script>
+
+<script id="velin-v3-js">
+(function(){
+'use strict';
+const KEY='velin_v3_state';
+let state={currentId:null,progress:{},finished:{},goal:5,finishedCount:0};
+try{state=Object.assign(state,JSON.parse(localStorage.getItem(KEY)||'{}'));}catch(e){}
+state.progress=state.progress||{}; state.finished=state.finished||{};
+const save=()=>localStorage.setItem(KEY,JSON.stringify(state));
+const books=()=>Array.isArray(window.books)?window.books:(typeof window.books!=='undefined'&&Array.isArray(window.books)?window.books:[]);
+const byId=id=>books().find(b=>String(b.id)===String(id));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(msg){let x=document.getElementById('v3Toast');if(!x){x=document.createElement('div');x.id='v3Toast';x.className='v3-toast';document.body.appendChild(x)}x.textContent=msg;x.classList.add('show');clearTimeout(window.__v3toast);window.__v3toast=setTimeout(()=>x.classList.remove('show'),1800)}
+function progress(b){return Math.max(0,Math.min(100,Number(state.progress[b.id]||0)))}
+function open(b){
+ if(!b)return;
+ state.currentId=b.id; save();
+ if(typeof window.openBook==='function') window.openBook(b.id);
+ else toast('Livre introuvable');
+}
+function surprise(){
+ const list=books().filter(Boolean);
+ if(!list.length){toast('Aucun livre disponible');return}
+ const b=list[Math.floor(Math.random()*list.length)];
+ state.currentId=b.id; save(); render();
+ // Always use the real existing book modal: no dependency on a non-existent V2 reader.
+ if(typeof window.openBook==='function') window.openBook(b.id);
+ toast('🎲 Surprise : '+(b.titre||'un livre'));
+ // Smart ambiance: select a track but only play after explicit user action.
+ if(Array.isArray(window.AMBIANCES)&&window.AMBIANCES.length){
+   const g=String(b.genre||'').toLowerCase();
+   let idx= g.includes('science')||g.includes('sf') ? 3 : g.includes('aventure')||g.includes('océan') ? 2 : g.includes('hiver')||g.includes('thriller') ? 1 : 0;
+   const sel=document.getElementById('ambiance-select');
+   if(sel){sel.value=String(idx);sel.dispatchEvent(new Event('change'));}
+ }
+}
+function render(){
+ const list=books(); if(!list.length)return;
+ const cur=byId(state.currentId)||list[0];
+ document.getElementById('v3ContinueInfo').textContent=cur.titre+' · '+progress(cur)+' %';
+ document.getElementById('v3Continue').disabled=!cur;
+ document.getElementById('v3Goal').textContent='Objectif : '+(state.finishedCount||0)+' / '+state.goal+' livre(s)';
+ document.getElementById('v3GoalBar').style.width=Math.min(100,(state.finishedCount/state.goal)*100)+'%';
+ const genres=[...new Set(list.map(b=>b.genre).filter(Boolean))].slice(0,7);
+ document.getElementById('v3Genres').innerHTML='<button class="v3-btn primary" data-g="">Tous</button>'+genres.map(g=>'<button class="v3-btn" data-g="'+esc(g)+'">'+esc(g)+'</button>').join('');
+ const selected=window.__v3genre||'';
+ const filtered=selected?list.filter(b=>b.genre===selected):list;
+ document.getElementById('v3Books').innerHTML=filtered.slice(0,8).map(b=>'<div class="v3-mini"><div><strong>'+esc(b.titre)+'</strong><div class="v3-muted">'+esc(b.auteur)+'</div><div class="v3-muted">'+esc(b.genre)+'</div></div><button class="v3-btn" data-id="'+esc(b.id)+'">Lire</button></div>').join('');
+ document.querySelectorAll('#v3Genres [data-g]').forEach(x=>x.onclick=()=>{window.__v3genre=x.dataset.g;render()});
+ document.querySelectorAll('#v3Books [data-id]').forEach(x=>x.onclick=()=>open(byId(x.dataset.id)));
+}
+document.getElementById('v3Surprise').onclick=surprise;
+document.getElementById('v3Continue').onclick=()=>open(byId(state.currentId)||books()[0]);
+document.getElementById('v3Focus').onclick=()=>open(byId(state.currentId)||books()[0]);
+document.getElementById('v3Mixer').onclick=()=>{
+ const m=document.getElementById('audio-player-container'); if(m)m.scrollIntoView({behavior:'smooth',block:'center'});
+ toast('🎧 Lecteur d’ambiance ouvert');
+};
+const modal=document.getElementById('modalContent');
+if(modal){
+ const observer=new MutationObserver(()=>{
+   const id=state.currentId,b=byId(id); if(!b)return;
+   const btn=modal.querySelector('[onclick^="startReading"]');
+   if(btn) btn.addEventListener('click',()=>{state.currentId=b.id;save();},{once:true});
+ });
+ observer.observe(modal,{childList:true,subtree:true});
+}
+function patchStartReading(){
+ if(typeof window.startReading!=='function')return;
+ const original=window.startReading;
+ window.startReading=function(id){
+   state.currentId=id; state.progress[id]=Math.max(1,progress(byId(id))); save(); render();
+   return original.apply(this,arguments);
+ };
+}
+patchStartReading();
+window.VelinV3={surprise,render,state,toast};
+
+// Test local intégré : vérifie les éléments critiques et le parcours Surprise-moi.
+function runSelfTest(){
+ const checks=[
+  ['books',books().length>0],
+  ['surprise button',!!document.getElementById('v3Surprise')],
+  ['continue button',!!document.getElementById('v3Continue')],
+  ['discovery grid',!!document.getElementById('v3Books')],
+  ['audio player',!!document.getElementById('ambiance-audio')],
+  ['7 ambiances',Array.isArray(window.AMBIANCES)&&window.AMBIANCES.length===7],
+  ['openBook',typeof window.openBook==='function']
+ ];
+ const failed=checks.filter(x=>!x[1]);
+ const badge=document.createElement('div');badge.className='v3-test visible';badge.textContent=failed.length?'TEST ⚠ '+failed.map(x=>x[0]).join(', '):'TEST ✓ 7/7 OK';
+ document.body.appendChild(badge); setTimeout(()=>badge.remove(),5000);
+ console.log('Vélin self-test',checks,failed);
+ return !failed.length;
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>{render();runSelfTest()},50),{once:true});
+else setTimeout(()=>{render();runSelfTest()},50);
+})();
+</script>
+
+<div class="v4-nav">
+<button class="v4-btn" id="v4BookmarksBtn">🔖 Marque-pages <span id="v4BmCount" class="v4-count">0</span></button>
+<button class="v4-btn" id="v4HistoryBtn">🧭 Historique</button>
+<button class="v4-btn" id="v4NotifBtn">🔔 <span id="v4NotifCount" class="v4-count">0</span></button>
+<button class="v4-btn" id="v4BadgesBtn">🏆 Badges</button>
+<button class="v4-btn" id="v4AssistantBtn">🧠 Assistant</button>
+</div>
+<div id="v4Bookmarks" class="v4-panel"><div class="v4-row"><h3>🔖 Marque-pages</h3><button class="v4-btn" data-close="v4Bookmarks">✕</button></div><div id="v4BookmarksList" class="v4-list"></div></div>
+<div id="v4History" class="v4-panel"><div class="v4-row"><h3>🧭 Récemment consultés</h3><button class="v4-btn" data-close="v4History">✕</button></div><div id="v4HistoryList" class="v4-list v4-history"></div></div>
+<div id="v4Notifications" class="v4-panel"><div class="v4-row"><h3>🔔 Notifications</h3><div><button class="v4-btn" id="v4ReadAll">Tout lire</button><button class="v4-btn" data-close="v4Notifications">✕</button></div></div><div id="v4NotifList" class="v4-list"></div></div>
+<div id="v4Badges" class="v4-panel"><div class="v4-row"><h3>🏆 Réalisations</h3><button class="v4-btn" data-close="v4Badges">✕</button></div><div id="v4BadgesList" class="v4-list"></div></div>
+<div id="v4Assistant" class="v4-panel v4-assistant"><div class="v4-row"><h3>🧠 Assistant de lecture</h3><button class="v4-btn" data-close="v4Assistant">✕</button></div><p class="v4-muted">Choisissez un livre pour obtenir ses informations et retrouver un mot dans son contenu disponible.</p><select id="v4BookSelect" class="v4-btn" style="width:100%"></select><div id="v4AssistantContent" class="v4-item" style="margin-top:10px"></div><div style="margin-top:10px"><input id="v4WordSearch" placeholder="Rechercher un mot…"><div id="v4WordResult" class="v4-muted" style="margin-top:6px"></div></div></div>
+
+<script id="velin-v4-js">
+(function(){'use strict';
+const KEY='velin_v4_state';
+let st={bookmarks:[],history:[],notifications:[],badges:[],readCount:0};
+try{st=Object.assign(st,JSON.parse(localStorage.getItem(KEY)||'{}'));}catch(e){}
+st.bookmarks=Array.isArray(st.bookmarks)?st.bookmarks:[];st.history=Array.isArray(st.history)?st.history:[];st.notifications=Array.isArray(st.notifications)?st.notifications:[];st.badges=Array.isArray(st.badges)?st.badges:[];
+const save=()=>localStorage.setItem(KEY,JSON.stringify(st));
+const getBooks=()=>typeof books!=='undefined'&&Array.isArray(books)?books:[];
+const byId=id=>getBooks().find(b=>String(b.id)===String(id));
+const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(m){let x=document.getElementById('v4Toast');if(!x){x=document.createElement('div');x.id='v4Toast';x.className='v3-toast';document.body.appendChild(x)}x.textContent=m;x.classList.add('show');clearTimeout(window.__v4t);window.__v4t=setTimeout(()=>x.classList.remove('show'),1800)}
+function notify(text){st.notifications.unshift({id:Date.now()+Math.random(),text,read:false,time:new Date().toLocaleString('fr-FR')});st.notifications=st.notifications.slice(0,30);save();renderNotifs()}
+function addHistory(b){if(!b)return;st.history=[{id:b.id,titre:b.titre,auteur:b.auteur,time:Date.now()},...st.history.filter(x=>String(x.id)!==String(b.id))].slice(0,20);save();renderHistory()}
+function openBookSafe(b){if(!b)return toast('Livre introuvable');addHistory(b);if(typeof window.openBook==='function')window.openBook(b.id);else toast('Ouverture indisponible');}
+function renderBookmarks(){const box=document.getElementById('v4BookmarksList');document.getElementById('v4BmCount').textContent=st.bookmarks.length;if(!st.bookmarks.length){box.innerHTML='<div class="v4-muted">Aucun marque-page.</div>';return}box.innerHTML=st.bookmarks.map((x,i)=>{const b=byId(x.bookId);return `<div class="v4-item"><strong>${esc(b?.titre||x.titre||'Livre')}</strong><div class="v4-muted">${esc(x.label||'Passage enregistré')} · ${esc(x.position||'')}</div><div style="margin-top:7px"><button class="v4-btn" data-bm-open="${i}">Ouvrir</button> <button class="v4-btn" data-bm-del="${i}">Supprimer</button></div></div>`}).join('');box.querySelectorAll('[data-bm-open]').forEach(b=>b.onclick=()=>{const x=st.bookmarks[+b.dataset.bmOpen];openBookSafe(byId(x.bookId));});box.querySelectorAll('[data-bm-del]').forEach(b=>b.onclick=()=>{st.bookmarks.splice(+b.dataset.bmDel,1);save();renderBookmarks();});}
+function addBookmark(){const b=byId(window.VelinV3?.state?.currentId)||getBooks()[0];if(!b)return;const label=prompt('Nom du marque-page :','Passage important');if(label===null)return;st.bookmarks.unshift({bookId:b.id,label:label.trim()||'Passage important',position:'Lecture actuelle'});st.bookmarks=st.bookmarks.slice(0,50);save();renderBookmarks();notify('🔖 Marque-page ajouté : '+b.titre);toast('Marque-page enregistré');}
+function renderHistory(){const box=document.getElementById('v4HistoryList');if(!st.history.length){box.innerHTML='<div class="v4-muted">Votre historique apparaîtra ici.</div>';return}box.innerHTML=st.history.map((x,i)=>`<div class="v4-item"><strong>${esc(x.titre)}</strong><div class="v4-muted">${esc(x.auteur)} · ${new Date(x.time).toLocaleString('fr-FR')}</div><button class="v4-btn" data-h="${i}" style="margin-top:6px">Revenir au livre</button></div>`).join('');box.querySelectorAll('[data-h]').forEach(b=>b.onclick=()=>openBookSafe(byId(st.history[+b.dataset.h].id)));}
+function renderNotifs(){const box=document.getElementById('v4NotifList'),unread=st.notifications.filter(x=>!x.read).length;document.getElementById('v4NotifCount').textContent=unread;if(!st.notifications.length){box.innerHTML='<div class="v4-muted">Aucune notification.</div>';return}box.innerHTML=st.notifications.map((n,i)=>`<div class="v4-item" style="opacity:${n.read?.65:1}"><strong>${n.read?'':'● '}${esc(n.text)}</strong><div class="v4-muted">${esc(n.time)}</div><button class="v4-btn" data-n="${i}" style="margin-top:6px">${n.read?'Supprimer':'Marquer comme lue'}</button></div>`).join('');box.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{const i=+b.dataset.n;if(st.notifications[i].read)st.notifications.splice(i,1);else st.notifications[i].read=true;save();renderNotifs();});}
+const badges=[['first','📖 Premier livre','Ouvrir un premier livre'],['five','📚 5 livres','Consulter 5 livres différents'],['bookmark','🔖 Collectionneur','Créer un marque-page'],['history','🧭 Explorateur','Avoir 5 livres dans l’historique'],['goal','🎯 Objectif atteint','Terminer l’objectif de lecture'],['night','🌙 Lecteur nocturne','Utiliser le site après 22 h']];
+function unlock(id){if(!st.badges.includes(id)){st.badges.push(id);save();const b=badges.find(x=>x[0]===id);notify('🏆 Badge débloqué : '+b[1]);toast('🏆 '+b[1]);}}
+function renderBadges(){const box=document.getElementById('v4BadgesList');box.innerHTML=badges.map(b=>`<div class="v4-badge" style="opacity:${st.badges.includes(b[0])?1:.38}"><span style="font-size:1.4rem">${b[1].split(' ')[0]}</span><div><strong>${esc(b[1].substring(b[1].indexOf(' ')+1))}</strong><div class="v4-muted">${esc(b[2])}</div></div></div>`).join('');}
+function renderAssistant(){const sel=document.getElementById('v4BookSelect'),bs=getBooks();sel.innerHTML=bs.map(b=>`<option value="${esc(b.id)}">${esc(b.titre)}</option>`).join('');const b=byId(sel.value)||bs[0];showAssistant(b);sel.onchange=()=>showAssistant(byId(sel.value));}
+function showAssistant(b){if(!b)return;document.getElementById('v4AssistantContent').innerHTML=`<strong>${esc(b.titre)}</strong><div class="v4-muted">${esc(b.auteur)} · ${esc(b.genre||'Genre non renseigné')} · ${esc(b.pages||'')} pages</div><p style="margin-top:8px">${esc(b.synopsis||'Aucun résumé fourni pour ce livre.')}</p>`;document.getElementById('v4WordSearch').oninput=()=>{const q=document.getElementById('v4WordSearch').value.trim().toLowerCase();const hay=String(b.synopsis||'').toLowerCase();document.getElementById('v4WordResult').textContent=q?(hay.includes(q)?`✓ « ${q} » apparaît dans le contenu disponible.`:`Aucune occurrence trouvée dans le contenu disponible.`):'';};}
+function panel(id){document.querySelectorAll('.v4-panel').forEach(x=>x.classList.remove('open'));document.getElementById(id).classList.add('open');}
+document.getElementById('v4BookmarksBtn').onclick=()=>panel('v4Bookmarks');document.getElementById('v4HistoryBtn').onclick=()=>panel('v4History');document.getElementById('v4NotifBtn').onclick=()=>panel('v4Notifications');document.getElementById('v4BadgesBtn').onclick=()=>{renderBadges();panel('v4Badges')};document.getElementById('v4AssistantBtn').onclick=()=>{renderAssistant();panel('v4Assistant')};document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>document.getElementById(b.dataset.close).classList.remove('open'));document.getElementById('v4ReadAll').onclick=()=>{st.notifications.forEach(n=>n.read=true);save();renderNotifs()};
+// Ajout d'un bouton marque-page dans le panneau assistant.
+const assistant=document.getElementById('v4Assistant');const bm=document.createElement('button');bm.className='v4-btn gold';bm.textContent='🔖 Ajouter un marque-page au livre actuel';bm.onclick=addBookmark;assistant.appendChild(bm);
+// Hooks sur l'ouverture des livres pour alimenter historique et notifications.
+const originalOpen=window.openBook;if(typeof originalOpen==='function'){window.openBook=function(id){const b=byId(id);if(b){addHistory(b);if(st.history.length===1)unlock('first');if(st.history.length>=5)unlock('history');}return originalOpen.apply(this,arguments)}}
+if(st.bookmarks.length)unlock('bookmark');
+// Auto notification de bienvenue uniquement une fois.
+if(!localStorage.getItem('velin_v4_welcome')){notify('✨ Les nouveaux outils de Vélin sont prêts : marque-pages, historique, notifications, badges et assistant.');localStorage.setItem('velin_v4_welcome','1')}
+renderBookmarks();renderHistory();renderNotifs();renderBadges();
+// Auto-test : vérifie les 5 fonctionnalités et leurs dépendances critiques.
+function selfTest(){const checks=[['marque-pages',!!document.getElementById('v4BookmarksBtn')],['historique',!!document.getElementById('v4HistoryBtn')],['notifications',!!document.getElementById('v4NotifBtn')],['badges',!!document.getElementById('v4BadgesBtn')],['assistant',!!document.getElementById('v4AssistantBtn')],['bibliothèque',getBooks().length>0],['ouverture livre',typeof window.openBook==='function'],['audio',!!document.getElementById('ambiance-audio')],['7 ambiances',Array.isArray(window.AMBIANCES)&&window.AMBIANCES.length===7]];const bad=checks.filter(x=>!x[1]);console.group('Vélin V4 self-test');console.table(checks.map(x=>({fonction:x[0],ok:x[1]})));console.log(bad.length?'ÉCHECS':'TOUT OK');console.groupEnd();return !bad.length}
+setTimeout(()=>{selfTest();if(new Date().getHours()>=22)unlock('night')},150);
+window.VelinV4={addBookmark,renderBookmarks,renderHistory,renderNotifs,renderBadges,selfTest};
+})();
+</script>
+<div id="v5AuthorModal" class="v5-modal"><div class="v5-card"><div style="display:flex;justify-content:space-between"><h2>✍️ Ajouter un livre</h2><button class="v5-btn" id="v5AuthorClose">✕</button></div><form id="v5AuthorForm" class="v5-form"><input id="v5Title" required placeholder="Titre"><input id="v5Author" required placeholder="Auteur"><input id="v5Genre" placeholder="Genre"><textarea id="v5Synopsis" rows="3" placeholder="Résumé"></textarea><textarea id="v5Content" rows="12" placeholder="Texte du livre. Pour les chapitres, utilisez : # Chapitre 1"></textarea><label>Importer un .txt : <input id="v5TextFile" type="file" accept=".txt,.md,text/plain"></label><button class="v5-btn" type="submit">Ajouter l’œuvre</button></form></div></div><div id="v5Reader" class="v5-reader"><div class="v5-bar"><button class="v5-btn" id="v5Close">✕</button><strong class="v5-title" id="v5TitleReader"></strong><button class="v5-btn active" id="v5Vert">↕️</button><button class="v5-btn" id="v5Horiz">↔️</button><button class="v5-btn" id="v5Minus">A−</button><button class="v5-btn" id="v5Plus">A+</button><button class="v5-btn" id="v5PDF">⬇️ PDF</button></div><div id="v5Scroll" class="v5-scroll"><article id="v5Paper" class="v5-paper"></article></div></div><button id="v5AuthorOpen" class="v5-btn" style="position:fixed;right:14px;bottom:70px;z-index:19000;background:#c9a455;color:#111">✍️ Ajouter un livre</button><div id="v5Toast" class="v5-toast"></div><script id="v5js">(()=>{const BK='velin_author_books_v5',PR='velin_reader_v5';let pref={dir:'v',size:18};try{pref=Object.assign(pref,JSON.parse(localStorage.getItem(PR)||'{}'))}catch(e){localStorage.removeItem(PR)}let current=null;const esc=x=>String(x??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));const own=()=>{try{const a=JSON.parse(localStorage.getItem(BK)||'[]');return Array.isArray(a)?a:[]}catch(e){localStorage.removeItem(BK);return[]}};const base=()=>typeof books!=='undefined'&&Array.isArray(books)?books:[];const all=()=>base().concat(own());const find=id=>all().find(b=>String(b.id)===String(id));const txt=b=>b.contenu||b.content||b.texte||b.text||b.synopsis||'';const parts=t=>{let a=String(t).split(/(?=^\s*#\s*chapitre\b[^\n]*)/gim).filter(x=>x.trim());return a.length?a:[String(t)]};const toast=x=>{let e=document.getElementById('v5Toast');e.textContent=x;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2200)};function apply(){let r=document.getElementById('v5Reader'),p=document.getElementById('v5Paper');r.classList.toggle('v5-horizontal',pref.dir==='h');document.getElementById('v5Vert').classList.toggle('active',pref.dir==='v');document.getElementById('v5Horiz').classList.toggle('active',pref.dir==='h');p.style.fontSize=pref.size+'px';localStorage.setItem(PR,JSON.stringify(pref))}function open(b){if(!b){toast('Livre introuvable');return}current=b;document.getElementById('v5TitleReader').textContent=b.titre||b.title||'Lecture';document.getElementById('v5Paper').innerHTML=parts(txt(b)).map((x,i)=>{let lines=x.trim().split(/\n/),h=lines[0].startsWith('#')?lines.shift().replace(/^#\s*/,''):'';return `<section class="v5-page">${h?`<h2>${esc(h)}</h2>`:''}${lines.join('\n').split(/\n{2,}/).map(q=>`<p>${esc(q).replace(/\n/g,'<br>')}</p>`).join('')}</section>`}).join('');apply();document.getElementById('v5Reader').classList.add('open');document.getElementById('v5Scroll').scrollTop=0}function close(){document.getElementById('v5Reader').classList.remove('open')}function pdf(){if(!current)return;let w=window.open('','_blank');if(!w){toast('Autorisez les fenêtres pour exporter');return}w.document.write(`<!doctype html><meta charset="utf-8"><title>${esc(current.titre||current.title||'Livre')}</title><style>@page{size:A5;margin:18mm}body{font-family:Georgia;line-height:1.7}h2{page-break-before:always}</style><h1>${esc(current.titre||current.title||'Livre')}</h1><p>${esc(current.auteur||current.author||'')}</p>${document.getElementById('v5Paper').innerHTML}`);w.document.close();setTimeout(()=>w.print(),300)}document.getElementById('v5Close').onclick=close;document.getElementById('v5Vert').onclick=()=>{pref.dir='v';apply()};document.getElementById('v5Horiz').onclick=()=>{pref.dir='h';apply()};document.getElementById('v5Minus').onclick=()=>{pref.size=Math.max(14,pref.size-1);apply()};document.getElementById('v5Plus').onclick=()=>{pref.size=Math.min(30,pref.size+1);apply()};document.getElementById('v5PDF').onclick=pdf;document.getElementById('v5AuthorOpen').onclick=()=>document.getElementById('v5AuthorModal').classList.add('open');document.getElementById('v5AuthorClose').onclick=()=>document.getElementById('v5AuthorModal').classList.remove('open');document.getElementById('v5AuthorForm').onsubmit=async e=>{e.preventDefault();let c=document.getElementById('v5Content').value.trim(),f=document.getElementById('v5TextFile').files[0];if(f)c=await f.text();if(!c){toast('Ajoutez le texte');return}let b={id:'author-'+Date.now(),titre:document.getElementById('v5Title').value.trim(),auteur:document.getElementById('v5Author').value.trim(),genre:document.getElementById('v5Genre').value.trim(),synopsis:document.getElementById('v5Synopsis').value.trim(),contenu:c,userCreated:true};let a=own();a.unshift(b);localStorage.setItem(BK,JSON.stringify(a));document.getElementById('v5AuthorModal').classList.remove('open');e.target.reset();toast('Œuvre ajoutée');if(window.VelinV5?.refresh)window.VelinV5.refresh()};function wire(){document.querySelectorAll('button,a').forEach(el=>{let t=(el.textContent||'').trim().toLowerCase();if((t==='lire'||t.includes('lire le livre'))&&!el.dataset.v5){el.dataset.v5=1;el.addEventListener('click',e=>{let card=el.closest('[data-book-id],[data-id],article,.book-card,.card');let id=card?.dataset.bookId||card?.dataset.id;let b=id?find(id):null;if(!b){let title=card?.querySelector('h1,h2,h3,h4')?.textContent?.trim();b=all().find(x=>(x.titre||x.title)===title)}if(b){e.preventDefault();open(b)}})}})}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(wire,500));else setTimeout(wire,500);window.VelinV5={open,downloadPDF:pdf,refresh:wire}})();</script><button id="v6Profile" class="v6p" title="Profil">☆</button><div id="v6Modal" class="v6m"><div class="v6c"><button id="v6Close" style="float:right">✕</button><div id="v6View"></div></div></div><script id="v6js">
+(()=>{
+'use strict';
+const K='velin_v6_account';
+let account=null;
+try{account=JSON.parse(localStorage.getItem(K)||'null')}catch(e){account=null;localStorage.removeItem(K)}
+const $=id=>document.getElementById(id);
+const esc=x=>String(x??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const save=()=>account?localStorage.setItem(K,JSON.stringify(account)):localStorage.removeItem(K);
+const validEmail=e=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+const hash=async value=>{const data=new TextEncoder().encode(value);const buf=await crypto.subtle.digest('SHA-256',data);return [...new Uint8Array(buf)].map(x=>x.toString(16).padStart(2,'0')).join('')};
+function sync(){
+ const p=$('v6Profile'); if(!p)return; p.textContent=account?(account.name||'U').trim().slice(0,1).toUpperCase():'☆';
+ p.title=account?`Profil de ${account.name}`:'Profil / Connexion';
+ document.querySelectorAll('#v5AuthorOpen').forEach(x=>{x.style.display=account?.role==='author'?'block':'none'});
+}
+function open(){ $('v6Modal').classList.add('open');$('v6Modal').setAttribute('aria-hidden','false');renderHome();}
+function close(){ $('v6Modal').classList.remove('open');$('v6Modal').setAttribute('aria-hidden','true');}
+function renderHome(msg=''){
+ const v=$('v6View'); if(!v)return;
+ if(account){
+   v.innerHTML=`<div class="v10-section"><h2>${esc(account.name)}</h2><div>${account.role==='author'?'✍️ Auteur':'📖 Lecteur'}</div>${msg?`<div class="v10-msg v10-ok">${esc(msg)}</div>`:''}${account.role==='author'?'<button id="v6Dashboard" class="v10-btn primary">📚 Mon espace auteur</button><button id="v6Pub" class="v10-btn primary">✍️ Ajouter un livre</button>':''}<button id="v6ChangePassword" class="v10-link">🔑 Modifier mon mot de passe</button><button id="v6Logout" class="v10-btn">Se déconnecter</button></div>`;
+   $('v6Logout').onclick=()=>{account=null;save();sync();renderHome('Vous êtes déconnecté.');};
+   $('v6ChangePassword').onclick=renderChangePassword;
+   if($('v6Pub'))$('v6Pub').onclick=()=>{close();window.VelinV8?.openAuthor?.()};
+   if($('v6Dashboard'))$('v6Dashboard').onclick=()=>{close();window.VelinV8?.openAuthorDashboard?.()};
+   return;
+ }
+ v.innerHTML=`<div class="v10-section"><h2>Bienvenue sur Vélin</h2><p class="v6small">Connectez-vous ou créez votre profil.</p>${msg?`<div class="v10-msg">${esc(msg)}</div>`:''}<button id="v6LoginOpen" class="v10-btn primary">🔐 Se connecter</button><button id="v6CreateOpen" class="v10-btn">✨ Créer un compte</button></div>`;
+ $('v6LoginOpen').onclick=renderLogin;$('v6CreateOpen').onclick=renderCreate;
+}
+function renderLogin(message=''){
+ $('v6View').innerHTML=`<div class="v10-section"><h2>🔐 Se connecter</h2><input id="v6LoginEmail" class="v10-input" type="email" autocomplete="email" placeholder="E-mail"><input id="v6LoginPass" class="v10-input" type="password" autocomplete="current-password" placeholder="Mot de passe"><div id="v6LoginMsg" class="v10-msg" style="display:${message?'block':'none'}">${esc(message)}</div><button id="v6LoginBtn" class="v10-btn primary">Se connecter</button><button id="v6Forgot" class="v10-link">Mot de passe oublié ?</button><button id="v6Back" class="v10-link">← Retour</button></div>`;
+ $('v6LoginBtn').onclick=async()=>{const email=$('v6LoginEmail').value.trim().toLowerCase(),pass=$('v6LoginPass').value;if(!validEmail(email)||!pass)return renderLogin('Veuillez saisir un e-mail et un mot de passe valides.');let stored=null;try{stored=JSON.parse(localStorage.getItem(K)||'null')}catch(e){}if(!stored||stored.email.toLowerCase()!==email)return renderLogin('Aucun compte local ne correspond à cet e-mail.');if(stored.passwordHash){const h=await hash(pass);if(h!==stored.passwordHash)return renderLogin('Mot de passe incorrect.')}else{stored.passwordHash=await hash(pass);account=stored;save();sync();renderHome('Mot de passe configuré pour ce compte existant.');return}account=stored;save();sync();renderHome('Connexion réussie.');};
+ $('v6Forgot').onclick=renderForgot;$('v6Back').onclick=renderHome;
+}
+function renderCreate(){
+ $('v6View').innerHTML=`<form id="v6CreateForm" class="v10-section"><h2>✨ Créer votre compte</h2><input id="v6Name" class="v10-input" required maxlength="60" placeholder="Nom ou pseudonyme"><input id="v6Email" class="v10-input" type="email" required autocomplete="email" placeholder="E-mail"><input id="v6Pass" class="v10-input" type="password" required minlength="6" autocomplete="new-password" placeholder="Mot de passe (6 caractères minimum)"><div class="v10-role"><label><input type="radio" name="r" value="reader" checked> 📖 Je suis un lecteur<br><small>Lecture et bibliothèque.</small></label><label><input type="radio" name="r" value="author"> ✍️ Je suis un auteur<br><small>Publication et gestion de mes œuvres.</small></label></div><button class="v10-btn primary" type="submit">Créer mon compte</button><button id="v6Google" class="v10-btn" type="button">G&nbsp;&nbsp; Continuer avec Google</button><button id="v6Back" class="v10-link" type="button">← Retour</button></form>`;
+ $('v6CreateForm').onsubmit=async e=>{e.preventDefault();const n=$('v6Name').value.trim(),email=$('v6Email').value.trim().toLowerCase(),pass=$('v6Pass').value,role=document.querySelector('input[name=r]:checked')?.value||'reader';if(n.length<2)return alert('Le nom doit contenir au moins 2 caractères.');if(!validEmail(email))return alert('Adresse e-mail invalide.');if(pass.length<6)return alert('Le mot de passe doit contenir au moins 6 caractères.');account={name:n,email,role,passwordHash:await hash(pass),createdAt:new Date().toISOString()};save();sync();renderHome('Compte créé avec succès.');};
+ $('v6Google').onclick=()=>renderGoogleInfo();$('v6Back').onclick=renderHome;
+}
+function renderForgot(){
+ $('v6View').innerHTML=`<form id="v6ForgotForm" class="v10-section"><h2>🔑 Mot de passe oublié ?</h2><p class="v6small">Comme Vélin fonctionne actuellement en mode local, la récupération se fait sur cet appareil. Aucun e-mail réel n'est envoyé.</p><input id="v6ResetEmail" class="v10-input" type="email" autocomplete="email" placeholder="E-mail du compte"><input id="v6ResetPass" class="v10-input" type="password" minlength="6" autocomplete="new-password" placeholder="Nouveau mot de passe"><input id="v6ResetPass2" class="v10-input" type="password" minlength="6" autocomplete="new-password" placeholder="Confirmer le nouveau mot de passe"><button class="v10-btn primary" type="submit">Réinitialiser le mot de passe</button><button id="v6Back" class="v10-link" type="button">← Retour à la connexion</button></form>`;
+ $('v6ForgotForm').onsubmit=async e=>{e.preventDefault();const email=$('v6ResetEmail').value.trim().toLowerCase(),p=$('v6ResetPass').value,p2=$('v6ResetPass2').value;let stored=null;try{stored=JSON.parse(localStorage.getItem(K)||'null')}catch(x){}if(!stored||stored.email.toLowerCase()!==email)return alert('Aucun compte local ne correspond à cet e-mail.');if(p.length<6)return alert('Le nouveau mot de passe doit contenir au moins 6 caractères.');if(p!==p2)return alert('Les deux mots de passe ne correspondent pas.');stored.passwordHash=await hash(p);account=stored;save();sync();renderHome('Mot de passe réinitialisé.');};
+ $('v6Back').onclick=renderLogin;
+}
+function renderChangePassword(){renderForgot();const email=$('v6ResetEmail');if(email){email.value=account.email;email.readOnly=true}}
+function renderGoogleInfo(){
+ $('v6View').innerHTML=`<div class="v10-section"><h2>Continuer avec Google</h2><p>Cette version locale ne peut pas effectuer une authentification Google réelle sans serveur OAuth. Aucun mot de passe Google ne sera demandé ou stocké par Vélin.</p><button class="v10-btn" id="v6Back">← Retour</button></div>`;$('v6Back').onclick=renderCreate;
+}
+$('v6Profile').onclick=open;$('v6Close').onclick=close;$('v6Modal').addEventListener('click',e=>{if(e.target===$('v6Modal'))close()});
+sync();setTimeout(sync,700);window.VelinAccount={open,close,renderLogin,renderForgot,sync};
+})();
+</script><script id="velin-v7-audio-ui">
+(function(){
+ const select=document.getElementById('ambiance-select');
+ if(!select || !Array.isArray(window.AMBIANCES)) return;
+ select.innerHTML='';
+ window.AMBIANCES.forEach((track,i)=>{
+   const o=document.createElement('option');o.value=String(i);o.textContent=track.name;select.appendChild(o);
+ });
+ // Conserve la piste sélectionnée si possible.
+ const saved=Number(localStorage.getItem('velin_ambiance_index')||0);
+ if(saved>=0 && saved<window.AMBIANCES.length) select.value=String(saved);
+ select.addEventListener('change',()=>localStorage.setItem('velin_ambiance_index',select.value));
+})();
+</script>
+<!-- ===== VÉLIN V8 READER ===== -->
+<div id="v8Reader" class="v8-reader" aria-hidden="true">
+  <header class="v8-head">
+    <button id="v8Back" class="v8-back" title="Retour à l'accueil" aria-label="Retour">←</button>
+    <div id="v8BookTitle" class="v8-book-title">Lecture</div>
+    <div class="v8-tools">
+      <button id="v8Vertical" class="v8-tool" title="Lire de haut en bas">↕️</button>
+      <button id="v8Horizontal" class="v8-tool" title="Lire de gauche à droite">↔️</button>
+      <button id="v8FontMinus" class="v8-tool">A−</button><button id="v8FontPlus" class="v8-tool">A+</button>
+      <button id="v8Dark" class="v8-tool">☾</button><button id="v8Pdf" class="v8-tool">⬇️ PDF</button>
+    </div>
+  </header>
+  <nav id="v8ChapterBar" class="v8-chapters" aria-label="Chapitres"></nav>
+  <main class="v8-stage">
+    <div id="v8Ambience" class="v8-ambience" style="display:none"></div>
+    <div id="v8Pages" class="v8-pages"><article id="v8Content" class="v8-content"></article></div>
+    <div class="v8-nav">
+      <button id="v8Prev" aria-label="Chapitre précédent">←</button>
+      <div id="v8ChapterCurrent" class="v8-chapter-current">—<small>chapitre</small></div>
+      <button id="v8Next" aria-label="Chapitre suivant">→</button>
+    </div>
+  </main>
+</div>
+<div id="v8AuthorModal" class="v8-author-modal" aria-hidden="true"><div class="v8-author-card">
+  <div class="v8-row"><div><h2 id="v8AuthorHeading" style="font-family:Georgia,serif;font-size:24px">✍️ Publier une œuvre</h2><div class="v8-small">Créez ou modifiez un livre, chapitre par chapitre.</div></div><button id="v8AuthorClose" class="v8-tool">✕</button></div>
+  <form id="v8AuthorForm" class="v8-form" style="margin-top:14px">
+    <input type="hidden" id="v8EditingId" value="">
+    <input id="v8TitleInput" required maxlength="120" placeholder="Titre du livre">
+    <input id="v8AuthorInput" required maxlength="100" placeholder="Nom de l’auteur">
+    <input id="v8GenreInput" maxlength="60" placeholder="Genre">
+    <textarea id="v8SynopsisInput" rows="3" maxlength="1500" placeholder="Résumé"></textarea>
+    <label class="v8-small">🖼️ Image de couverture (optionnel)<input id="v8CoverInput" type="file" accept="image/*"></label>
+    <div id="v8CoverName" class="v8-small"></div>
+    <div id="v8ChapterEditors"></div><button type="button" id="v8AddChapter" class="v8-add">＋ Ajouter un chapitre</button>
+    <button type="submit" class="v8-tool" style="background:#c9a455;color:#17130b;font-weight:800" id="v8PublishSubmit">Publier le livre</button>
+  </form>
+</div></div>
+<div id="v9AuthorDashboard" class="v9-author-dashboard" aria-hidden="true"><div class="v9-author-card">
+  <div class="v8-row"><div><h2 style="font-family:Georgia,serif;font-size:24px">✍️ Espace auteur</h2><div id="v9AuthorStats" class="v9-small"></div></div><button id="v9AuthorDashboardClose" class="v8-tool">✕</button></div>
+  <div class="v8-row" style="margin-top:14px"><button id="v9NewBook" class="v8-tool" style="background:#c9a455;color:#17130b;font-weight:800">＋ Nouveau livre</button><button id="v9RefreshBooks" class="v8-tool">↻ Actualiser</button></div>
+  <div id="v9AuthorBooks" style="margin-top:10px"></div>
+</div></div><div id="v8Toast" class="v8-toast"></div><script id="velin-v8-js">
+(()=>{
+'use strict';
+const BOOKKEY='velin_author_books_v8';
+const PREFKEY='velin_v8_reader';
+let pref={dir:'v',size:19,dark:false};try{pref=Object.assign(pref,JSON.parse(localStorage.getItem(PREFKEY)||'{}'))}catch(e){localStorage.removeItem(PREFKEY)}
+let current=null,currentIndex=0,currentChapters=[];
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const own=()=>{try{const a=JSON.parse(localStorage.getItem(BOOKKEY)||'[]');return Array.isArray(a)?a:[]}catch(e){localStorage.removeItem(BOOKKEY);return[]}}
+const saveOwn=a=>localStorage.setItem(BOOKKEY,JSON.stringify(a));
+const base=()=>typeof books!=='undefined'&&Array.isArray(books)?books:[];
+const all=()=>{const out=Array.isArray(base())?[...base()]:[];const ids=new Set(out.map(b=>String(b.id)));own().forEach(b=>{if(!ids.has(String(b.id))){out.push(b);ids.add(String(b.id))}});return out};
+const find=id=>all().find(b=>String(b.id)===String(id));
+function toast(s){$('v8Toast').textContent=s;$('v8Toast').classList.add('show');setTimeout(()=>$('v8Toast').classList.remove('show'),2300)}
+function normalizeChapters(b){
+ if(Array.isArray(b.chapters)&&b.chapters.length)return b.chapters;
+ const txt=b.contenu||b.content||b.texte||b.text||'';
+ const m=String(txt).split(/(?=^\s*#\s*chapitre\b[^\n]*)/gim).filter(x=>x.trim());
+ return (m.length?m:[String(txt)]).map((x,i)=>{let lines=x.trim().split(/\n/), title=lines[0]?.match(/^#\s*(.*)$/)?.[1]||`Chapitre ${i+1}`;if(/^#/.test(lines[0]||''))lines.shift();return {title,content:lines.join('\n').trim(),ambience:null}});
+}
+function audioList(){return Array.isArray(window.AMBIANCES)?window.AMBIANCES: (typeof AMBIANCES!=='undefined'?AMBIANCES:[])}
+
+// Stockage des fichiers audio importés : IndexedDB évite de remplir localStorage.
+const MEDIA_DB='velin_media_v10';
+function mediaOpen(){return new Promise((resolve,reject)=>{if(!window.indexedDB)return reject(new Error('IndexedDB indisponible'));const r=indexedDB.open(MEDIA_DB,1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('audio'))r.result.createObjectStore('audio')};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error||new Error('Ouverture audio impossible'));})}
+async function mediaPut(file){const db=await mediaOpen(),id='audio-'+Date.now()+'-'+Math.random().toString(36).slice(2);await new Promise((res,rej)=>{const tx=db.transaction('audio','readwrite');tx.objectStore('audio').put(file,id);tx.oncomplete=res;tx.onerror=()=>rej(tx.error||new Error('Enregistrement audio impossible'))});db.close();return id}
+async function mediaGet(id){const db=await mediaOpen();const value=await new Promise((res,rej)=>{const tx=db.transaction('audio','readonly');const q=tx.objectStore('audio').get(id);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)});db.close();return value}
+async function resolveAmbience(ch){
+ const a=ch?.ambience; if(!a)return null;
+ if(a.type==='builtin' || Number.isInteger(a.builtinIndex)){const i=Number.isInteger(a.builtinIndex)?a.builtinIndex:Number(a.index);return audioList()[i]||null}
+ if(a.type==='custom' && a.id){try{const blob=await mediaGet(a.id);return blob?{name:a.name||'Ambiance importée',src:URL.createObjectURL(blob),custom:true}:null}catch(e){return null}}
+ // Compatibilité avec les anciens livres de la V10.
+ if(a.src)return {name:a.name||'Ambiance',src:a.src,custom:!!a.custom};
+ return null;
+}
+async function setChapterAmbience(ch){
+ const box=$('v8Ambience'); const audio=$('ambiance-audio');
+ if(window.__velinChapterObjectUrl){try{URL.revokeObjectURL(window.__velinChapterObjectUrl)}catch(e){}window.__velinChapterObjectUrl=null}
+ const resolved=await resolveAmbience(ch);
+ if(!resolved){box.style.display='none';if(audio){audio.pause();audio.removeAttribute('src');audio.load()}return}
+ const src=resolved.src,name=resolved.name||'Ambiance du chapitre';
+ box.style.display='block';box.innerHTML=`🎧 ${esc(name)} <button id="v8PlayChapterAmbience" type="button">▶</button>`;
+ if(audio){audio.src=src; audio.dataset.chapter=String(currentIndex); audio.load();if(String(src).startsWith('blob:'))window.__velinChapterObjectUrl=src;}
+ $('v8PlayChapterAmbience').onclick=()=>{if(audio)audio.play().catch(()=>toast('Appuyez sur ▶ pour activer le son.'))};
+ if(audio && !audio.paused) audio.play().catch(()=>{});
+}
+function renderChapters(){
+ $('v8ChapterBar').innerHTML=currentChapters.map((c,i)=>`<button class="v8-chapter-tab ${i===currentIndex?'active':''}" data-v8-ch="${i}">${esc(c.title||`Chapitre ${i+1}`)}</button>`).join('');
+ document.querySelectorAll('[data-v8-ch]').forEach(b=>b.onclick=()=>goChapter(Number(b.dataset.v8Ch)));
+ const c=currentChapters[currentIndex]; $('v8ChapterCurrent').innerHTML=`${esc(c?.title||`Chapitre ${currentIndex+1}`)}<small>${currentIndex+1} / ${currentChapters.length}</small>`;
+ $('v8Prev').disabled=currentIndex<=0;$('v8Next').disabled=currentIndex>=currentChapters.length-1;
+ const active=$('v8ChapterBar').querySelector('.active');active?.scrollIntoView({block:'nearest',inline:'center'});
+}
+function renderChapter(){
+ const c=currentChapters[currentIndex]||{title:'',content:''};
+ $('v8Content').innerHTML=`<h1>${esc(current?.titre||current?.title||'Livre')}</h1><div class="v8-meta">${esc(current?.auteur||current?.author||'')} · ${esc(current?.genre||'')}</div>${c.image?`<img class="v9-chapter-image" src="${esc(c.image.src)}" alt="${esc(c.image.name||'Illustration du chapitre')}">`:''}<h2>${esc(c.title||`Chapitre ${currentIndex+1}`)}</h2>${String(c.content||'').split(/\n{2,}/).map(p=>`<p>${esc(p).replace(/\n/g,'<br>')}</p>`).join('')||'<p>Ce chapitre ne contient pas encore de texte.</p>'}`;
+ $('v8Pages').scrollTop=0;$('v8Pages').scrollLeft=0;renderChapters();setChapterAmbience(c);saveRecent();
+}
+function apply(){
+ const r=$('v8Reader'),p=$('v8Content');r.classList.toggle('dark',!!pref.dark);p.style.fontSize=pref.size+'px';
+ r.classList.toggle('v8-horizontal',pref.dir==='h');
+ if(pref.dir==='h'){$('v8Pages').style.overflowX='auto';$('v8Pages').style.overflowY='hidden';p.style.maxWidth='none';p.style.width='max-content';p.style.minWidth='100%';p.style.columns='1';p.style.display='flex';p.style.gap='30px';[...p.children].forEach(x=>{x.style.width='min(720px,82vw)';x.style.flex='0 0 min(720px,82vw)'})}
+ else{$('v8Pages').style.overflowX='hidden';$('v8Pages').style.overflowY='auto';p.style.maxWidth='820px';p.style.width='auto';p.style.display='block'}
+ $('v8Vertical').classList.toggle('active',pref.dir==='v');$('v8Horizontal').classList.toggle('active',pref.dir==='h');localStorage.setItem(PREFKEY,JSON.stringify(pref));
+}
+function openReader(id,chapter=0){
+ const b=find(id);if(!b)return toast('Livre introuvable.');current=b;currentChapters=normalizeChapters(b);currentIndex=Math.max(0,Math.min(currentChapters.length-1,chapter));
+ $('v8BookTitle').textContent=b.titre||b.title||'Lecture';$('v8Reader').classList.add('open');$('v8Reader').setAttribute('aria-hidden','false');
+ apply();renderChapter();
+ try{history.pushState({velinReader:true,id:b.id,chapter:currentIndex},'',`#lecture/${encodeURIComponent(b.id)}/${currentIndex+1}`)}catch(e){}
+}
+function closeReader(push=true){$('v8Reader').classList.remove('open');$('v8Reader').setAttribute('aria-hidden','true');if(push)try{history.pushState({},'',location.pathname+location.search)}catch(e){}}
+function goChapter(i){if(i<0||i>=currentChapters.length)return;currentIndex=i;renderChapter();try{history.replaceState({velinReader:true,id:current.id,chapter:i},'',`#lecture/${encodeURIComponent(current.id)}/${i+1}`)}catch(e){}}
+function saveRecent(){if(!current)return;let a=[];try{a=JSON.parse(localStorage.getItem('velin_v5_recent')||'[]')}catch(e){a=[]}a=(Array.isArray(a)?a:[]).filter(x=>String(x.id)!==String(current.id));a.unshift({id:current.id,titre:current.titre||current.title});localStorage.setItem('velin_v5_recent',JSON.stringify(a.slice(0,12)))}
+function downloadPDF(){
+ if(!current)return;let w=window.open('','_blank');if(!w){toast('Autorisez les fenêtres pour exporter le PDF.');return}
+ const chapters=currentChapters.map(c=>`<section><h2>${esc(c.title)}</h2>${c.image?`<img src="${esc(c.image.src)}" style="display:block;max-width:100%;max-height:420px;margin:0 auto 20px;object-fit:contain" alt="">`:''}${String(c.content||'').split(/\n{2,}/).map(p=>`<p>${esc(p).replace(/\n/g,'<br>')}</p>`).join('')}</section>`).join('');
+ w.document.write(`<!doctype html><meta charset="utf-8"><title>${esc(current.titre||'Livre')}</title><style>@page{size:A5;margin:18mm}body{font-family:Georgia,serif;line-height:1.7;color:#222}h1{text-align:center}h2{page-break-before:always}p{margin:0 0 1em}</style><h1>${esc(current.titre||'Livre')}</h1><p style="text-align:center">${esc(current.auteur||'')}</p>${chapters}`);w.document.close();setTimeout(()=>{w.focus();w.print()},250)
+}
+$('v8Back').onclick=()=>closeReader(true);$('v8Prev').onclick=()=>goChapter(currentIndex-1);$('v8Next').onclick=()=>goChapter(currentIndex+1);$('v8Vertical').onclick=()=>{pref.dir='v';apply()};$('v8Horizontal').onclick=()=>{pref.dir='h';apply()};$('v8FontMinus').onclick=()=>{pref.size=Math.max(14,pref.size-1);apply()};$('v8FontPlus').onclick=()=>{pref.size=Math.min(30,pref.size+1);apply()};$('v8Dark').onclick=()=>{pref.dark=!pref.dark;apply()};$('v8Pdf').onclick=downloadPDF;
+window.addEventListener('popstate',()=>{if(!location.hash.startsWith('#lecture/'))closeReader(false)});
+
+// ===== Auteur : bibliothèque, édition, chapitres + ambiance + image =====
+let chapterCount=0;
+function ambienceOptions(selected=''){
+ const list=audioList();return `<option value="">Aucune ambiance</option>`+list.map((a,i)=>`<option value="builtin:${i}" ${selected===`builtin:${i}`?'selected':''}>${esc(a.name)}</option>`).join('');
+}
+function imageData(file){return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=rej;fr.readAsDataURL(file)})}
+function addChapterEditor(data={}){
+ chapterCount++;const n=chapterCount;const box=document.createElement('div');box.className='v8-chapter-editor';box.dataset.chapter=n;
+ box.innerHTML=`<div class="v8-row"><strong>Chapitre ${n}</strong><button type="button" class="v8-tool" data-remove>Supprimer</button></div>
+ <input data-title required placeholder="Titre du chapitre" value="${esc(data.title||'')}" style="margin-top:8px">
+ <textarea data-content required rows="9" placeholder="Texte du chapitre" style="margin-top:8px">${esc(data.content||'')}</textarea>
+ <label class="v8-small">🎧 Ambiance par chapitre<select data-ambience>${ambienceOptions(data.ambience?.type==='builtin'?`builtin:${Number(data.ambience.builtinIndex)}`:(data.ambience?.builtin?`builtin:${audioList().findIndex(a=>a.src===data.ambience.src)}`:''))}</select></label>
+ <label class="v8-small">📥 Importer une ambiance depuis votre appareil <input data-audio type="file" accept="audio/mpeg,audio/mp3,audio/wav,audio/ogg,audio/*"></label>
+ <div class="v8-small" data-audio-name>${esc(data.ambience?.custom?data.ambience.name:'')}</div>
+ <label class="v8-small">🖼️ Illustration du chapitre (optionnel) <input data-image type="file" accept="image/*"></label>
+ <div class="v8-small" data-image-name>${esc(data.image?.name||'')}</div>`;
+ $('v8ChapterEditors').appendChild(box);
+ const sel=box.querySelector('[data-ambience]');sel.onchange=()=>{if(sel.value)box.querySelector('[data-audio]').value=''};
+ box.querySelector('[data-audio]').onchange=e=>{if(e.target.files[0]){sel.value='';box.querySelector('[data-audio-name]').textContent=e.target.files[0].name}};
+ const img=box.querySelector('[data-image]');img.onchange=e=>{if(e.target.files[0])box.querySelector('[data-image-name]').textContent=e.target.files[0].name};
+ box.querySelector('[data-remove]').onclick=()=>{box.remove();[...$('v8ChapterEditors').children].forEach((x,i)=>x.querySelector('.v8-row strong').textContent=`Chapitre ${i+1}`)};
+}
+function resetAuthorForm(){ $('v8AuthorForm').reset();$('v8EditingId').value='';$('v8ChapterEditors').innerHTML='';$('v8CoverName').textContent='';chapterCount=0;addChapterEditor();$('v8AuthorHeading').textContent='✍️ Publier une œuvre';$('v8PublishSubmit').textContent='Publier le livre'; }
+function openAuthor(editBook=null){
+ $('v8AuthorModal').classList.add('open');$('v8AuthorModal').setAttribute('aria-hidden','false');
+ if(editBook){
+  $('v8AuthorHeading').textContent='✏️ Modifier le livre';$('v8PublishSubmit').textContent='Enregistrer les modifications';$('v8EditingId').value=editBook.id;
+  $('v8TitleInput').value=editBook.titre||'';$('v8AuthorInput').value=editBook.auteur||'';$('v8GenreInput').value=editBook.genre||'';$('v8SynopsisInput').value=editBook.synopsis||'';
+  $('v8ChapterEditors').innerHTML='';chapterCount=0;(editBook.chapters||[]).forEach(c=>addChapterEditor(c));if(!(editBook.chapters||[]).length)addChapterEditor();
+ }else resetAuthorForm();
+}
+$('v8AddChapter').onclick=()=>addChapterEditor();
+$('v8AuthorClose').onclick=()=>{$('v8AuthorModal').classList.remove('open')};
+async function publish(e){
+ e.preventDefault();
+ const editors=[...$('v8ChapterEditors').children];if(!editors.length)return toast('Ajoutez au moins un chapitre.');
+ const chapters=[];
+ for(let i=0;i<editors.length;i++){
+  const box=editors[i],title=box.querySelector('[data-title]').value.trim(),content=box.querySelector('[data-content]').value.trim(),sel=box.querySelector('[data-ambience]').value,file=box.querySelector('[data-audio]').files[0],imageFile=box.querySelector('[data-image]').files[0];
+  if(!title||!content)return toast(`Complétez le chapitre ${i+1}.`);
+  let ambience=null,image=null;
+  if(file){
+    try{const mediaId=await mediaPut(file);ambience={type:'custom',id:mediaId,name:file.name,custom:true}}
+    catch(err){toast('Impossible d’enregistrer cette ambiance audio sur cet appareil.');return}
+  }
+  else if(sel.startsWith('builtin:')){const i=Number(sel.split(':')[1]),a=audioList()[i];if(a)ambience={type:'builtin',builtinIndex:i,name:a.name}}
+  const previousId=$('v8EditingId').value;const previous=previousId?find(previousId):null;const old=previous?.chapters?.[i];
+  if(imageFile){const src=await imageData(imageFile);image={name:imageFile.name,src}}
+  else if(old?.image)image=old.image;
+  else image=null;
+  if(!ambience && old?.ambience && !file && !sel)ambience=old.ambience;
+  // Convert any legacy builtin data-URL to a tiny index reference before saving.
+  if(ambience?.src && !ambience.custom){const bi=audioList().findIndex(a=>a.src===ambience.src);if(bi>=0)ambience={type:'builtin',builtinIndex:bi,name:audioList()[bi].name};}
+  chapters.push({title,content,ambience,image});
+ }
+ let cover='';const coverFile=$('v8CoverInput').files[0];const editing=$('v8EditingId').value;const oldBook=editing?find(editing):null;
+ if(coverFile)cover=await imageData(coverFile);else cover=oldBook?.cover||'';
+ const b={id:editing||'author-'+Date.now(),titre:$('v8TitleInput').value.trim(),auteur:$('v8AuthorInput').value.trim(),genre:$('v8GenreInput').value.trim()||'Autre',statut:'independant',note:5,annee:new Date().getFullYear(),pages:Math.max(1,Math.ceil(chapters.reduce((s,c)=>s+c.content.length,0)/2200)),populaire:0,synopsis:$('v8SynopsisInput').value.trim(),chapters,cover,userCreated:true};
+ b._search=`${b.titre} ${b.auteur} ${b.genre}`.toLowerCase();
+ const arr=own().filter(x=>String(x.id)!==String(b.id));arr.unshift(b);
+ try{saveOwn(arr)}catch(err){return toast('Espace de stockage insuffisant : réduisez la taille des images/audio importés.')}
+ const idx=books.findIndex(x=>String(x.id)===String(b.id));if(idx>=0)books[idx]=b;else books.unshift(b);
+ try{saveBooks()}catch(err){/* La copie mémoire reste immédiatement lisible; own() conserve la version auteur. */}
+ $('v8AuthorModal').classList.remove('open');resetAuthorForm();initUI();renderAuthorDashboard();toast(editing?'✅ Livre modifié.':'📚 Livre publié : il apparaît maintenant sur la page principale et peut être lu immédiatement.');
+}
+$('v8AuthorForm').onsubmit=publish;
+function authorAllowed(){try{const a=JSON.parse(localStorage.getItem('velin_v6_account')||'null');return a?.role==='author'}catch(e){return false}}
+function renderAuthorDashboard(){
+ const list=own();$('v9AuthorStats').textContent=`${list.length} livre${list.length>1?'s':''} publié${list.length>1?'s':''} · ${list.reduce((n,b)=>n+(b.chapters?.length||0),0)} chapitre${list.reduce((n,b)=>n+(b.chapters?.length||0),0)>1?'s':''}`;
+ $('v9AuthorBooks').innerHTML=list.length?list.map(b=>`<div class="v9-book-row"><div><strong>${esc(b.titre)}</strong><div class="v9-small">${esc(b.genre||'Autre')} · ${b.chapters?.length||0} chapitre(s)</div></div><div style="display:flex;gap:7px"><button class="v8-tool" data-edit-book="${esc(b.id)}">✏️ Modifier</button><button class="v8-tool" data-read-book="${esc(b.id)}">📖 Lire</button></div></div>`).join(''):'<div class="v9-small">Vous n’avez encore publié aucun livre.</div>';
+ $('v9AuthorBooks').querySelectorAll('[data-edit-book]').forEach(btn=>btn.onclick=()=>openAuthor(find(btn.dataset.editBook)));
+ $('v9AuthorBooks').querySelectorAll('[data-read-book]').forEach(btn=>btn.onclick=()=>openReader(btn.dataset.readBook));
+}
+function openAuthorDashboard(){if(!authorAllowed())return toast('Cette section est réservée aux auteurs.');renderAuthorDashboard();$('v9AuthorDashboard').classList.add('open');$('v9AuthorDashboard').setAttribute('aria-hidden','false')}
+$('v9AuthorDashboardClose').onclick=()=>{$('v9AuthorDashboard').classList.remove('open')};$('v9NewBook').onclick=()=>{ $('v9AuthorDashboard').classList.remove('open');openAuthor()};$('v9RefreshBooks').onclick=renderAuthorDashboard;
+window.VelinV8={openReader,openAuthor,openAuthorDashboard,goChapter,selfTest(){return {books:all().length,ambiences:audioList().length,author:authorAllowed()}}};
+// Route directe #lecture/id/chapitre
+if(location.hash.startsWith('#lecture/')){const p=location.hash.split('/');setTimeout(()=>openReader(decodeURIComponent(p[1]),Math.max(0,Number(p[2]||1)-1)),500)}
+})();
+</script>
+<script id="velin-v10-selftest">
+(()=>{
+'use strict';
+const results=[];window.__VELIN_RUNTIME_ERRORS=[];window.addEventListener('error',e=>window.__VELIN_RUNTIME_ERRORS.push(String(e.message||e.error||'Erreur JavaScript')));window.addEventListener('unhandledrejection',e=>window.__VELIN_RUNTIME_ERRORS.push(String(e.reason||'Promise rejetée')));const check=(name,fn)=>{try{const ok=!!fn();results.push({name,ok});return ok}catch(e){results.push({name,ok:false,error:String(e)});return false}};
+function run(){
+ check('Profil',()=>!!document.getElementById('v6Profile')&&!!window.VelinAccount);
+ check('Fenêtre profil',()=>!!document.getElementById('v6Modal')&&!!document.getElementById('v6View'));
+ check('Lecteur',()=>!!document.getElementById('v8Reader')&&!!window.VelinV8?.openReader);
+ check('Espace auteur',()=>!!document.getElementById('v9AuthorDashboard')&&!!window.VelinV8?.openAuthorDashboard);
+ check('Publication',()=>!!document.getElementById('v8AuthorForm')&&!!window.VelinV8?.openAuthor);
+ check('7 ambiances',()=>Array.isArray(window.AMBIANCES)&&window.AMBIANCES.length>=7);
+ check('Navigation chapitres',()=>!!document.getElementById('v8Prev')&&!!document.getElementById('v8Next')&&!!document.getElementById('v8ChapterBar'));
+ check('PDF',()=>!!document.getElementById('v8Pdf'));
+ check('Stockage local',()=>{localStorage.setItem('__velin_test','1');const x=localStorage.getItem('__velin_test')==='1';localStorage.removeItem('__velin_test');return x});
+ check('Aucune erreur runtime capturée au diagnostic',()=>window.__VELIN_RUNTIME_ERRORS.length===0);window.VelinDiagnostics={results,ok:results.every(x=>x.ok),runtimeErrors:window.__VELIN_RUNTIME_ERRORS,run};
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(run,900),{once:true});else setTimeout(run,900);
+})();
+</script>
+</body>
+</html>

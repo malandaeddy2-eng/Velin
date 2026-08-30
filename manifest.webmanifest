@@ -1,0 +1,9 @@
+{
+  "name":"Vélin — Lecture sans limites",
+  "short_name":"Vélin",
+  "start_url":"./",
+  "display":"standalone",
+  "background_color":"#151820",
+  "theme_color":"#151820",
+  "lang":"fr"
+}
