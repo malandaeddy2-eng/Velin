@@ -879,7 +879,15 @@ initUI();
    Les fichiers audio sont servis séparément depuis assets/audio.
    Cette organisation accélère le chargement et facilite l’hébergement Internet.
    ============================================================ */
-const AMBIANCES = [{"name":'🔥 Feu de camp',"src":'../assets/audio/feu-de-camp.mp3'},{"name":'❄️ Vent d’hiver',"src":'../assets/audio/vent-d-hiver.mp3'},{"name":'🌊 Vagues de l’océan',"src":'../assets/audio/vagues-de-locean.mp3'},{"name":'🌌 Espace cosmique',"src":'../assets/audio/espace-cosmique.mp3'},{"name":'🌌 Nuit étoilée',"src":'../assets/audio/nuit-etoilee.mp3'},{"name":'🌲 Forêt mystique',"src":'../assets/audio/foret-mystique.mp3'},{"name":'🌧️ Pluie relaxante',"src":'../assets/audio/pluie-relaxante.mp3'}];
+const AMBIANCES = [
+  {"name":"🔥 Feu de camp","src":"assets/audio/feu-de-camp.mp3"},
+  {"name":"❄️ Vent d’hiver","src":"assets/audio/vent-d-hiver.mp3"},
+  {"name":"🌊 Vagues de l’océan","src":"assets/audio/vagues-de-locean.mp3"},
+  {"name":"🌌 Espace cosmique","src":"assets/audio/espace-cosmique.mp3"},
+  {"name":"🌌 Nuit étoilée","src":"assets/audio/nuit-etoilee.mp3"},
+  {"name":"🌲 Forêt mystique","src":"assets/audio/foret-mystique.mp3"},
+  {"name":"🌧️ Pluie relaxante","src":"assets/audio/pluie-relaxante.mp3"}
+];
 
 // Migration : les anciennes V10 pouvaient enregistrer la grosse data-URL de l'ambiance par chapitre.
 // On remplace ces copies par un simple index pour éviter QuotaExceededError.
